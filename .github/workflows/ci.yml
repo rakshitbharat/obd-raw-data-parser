@@ -30,14 +30,17 @@ jobs:
       - run: npm ci
       - run: npm run ci
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
           fail_ci_if_error: true
           verbose: true
-          retry_max_count: 3
-          retry_delay_seconds: 60
-        timeout-minutes: 15
+          retry_max_count: 5
+          retry_delay_seconds: 120
+        timeout-minutes: 20
 
   publish:
     needs: test
