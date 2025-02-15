@@ -1,4 +1,3 @@
-import responsePIDS from './obdInfo';
 import PIDS from './obdInfo';
 import { IObdPIDDescriptor, IParsedOBDResponse, Modes} from './obdTypes';
 
@@ -108,7 +107,3 @@ export function getPIDInfo(pid: string): IObdPIDDescriptor | null{
 export function getAllPIDs(): IObdPIDDescriptor[]{
   return responsePIDS;
 }
-
-export { parseOBDResponse, getPIDInfo, getAllPIDs } from './obdParser';
-export type { IObdPIDDescriptor, IParsedOBDResponse } from './obdTypes';
-export { Modes } from './obdTypes';
