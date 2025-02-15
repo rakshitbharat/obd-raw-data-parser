@@ -1,5 +1,10 @@
-
-
-
-
-example/.gitignoretsconfig.jsonsrc/
+src/
+example/
+.gitignore
+tsconfig.json
+.eslintrc.js
+jest.config.js
+.husky
+.github
+commitlint.config.js
+*.test.ts
