@@ -34,13 +34,12 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
-          fail_ci_if_error: true
+          directory: ./coverage/
+          fail_on_error: true
+          flags: unittests
+          name: codecov-umbrella
           verbose: true
-          retry_max_count: 5
-          retry_delay_seconds: 120
-        timeout-minutes: 20
+        timeout-minutes: 10
 
   publish:
     needs: test
