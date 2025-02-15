@@ -1,3 +1,4 @@
+import responsePIDS from './obdInfo';
 import PIDS from './obdInfo';
 import { IObdPIDDescriptor, IParsedOBDResponse, Modes} from './obdTypes';
 

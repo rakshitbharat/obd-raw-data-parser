@@ -1,4 +1,17 @@
 src/
+examples/
+.github/
+.husky/
+coverage/
+docs/
+tests/
+.eslintrc.js
+.gitignore
+jest.config.js
+tsconfig.json
+*.test.ts
+*.log
+src/
 example/
 .gitignore
 tsconfig.json
