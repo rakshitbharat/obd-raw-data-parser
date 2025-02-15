@@ -121,6 +121,27 @@ class VehicleDashboard {
 }
 ```
 
+## Code Coverage
+
+Current test coverage report:
+
+| File | % Stmts | % Branch | % Funcs | % Lines |
+|------|---------|----------|---------|---------|
+| All files | 86.44 | 76.67 | 73.58 | 86.44 |
+| index.ts | 81.25 | 78.95 | 100 | 81.25 |
+| obdInfo.ts | 86.11 | 57.14 | 68.89 | 86.11 |
+| obdPIDS.ts | 100 | 100 | 100 | 100 |
+| obdTypes.ts | 100 | 100 | 100 | 100 |
+| obdUtils.ts | 100 | 100 | 100 | 100 |
+
+Detailed metrics:
+- Statements: 153/177
+- Branches: 23/30  
+- Functions: 39/53
+- Lines: 153/177
+
+Generated on: Feb 15, 2024
+
 ## 🤝 Contributing
 
 Contributions are welcome! Here's how you can help:
