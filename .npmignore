@@ -21,3 +21,9 @@ jest.config.js
 .github
 commitlint.config.js
 *.test.ts
+.github/
+.git/
+node_modules/
+test/
+*.test.js
+.npmignore
