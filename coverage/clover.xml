@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1739623933649" clover="3.2.0">
+  <project timestamp="1739623933649" name="All files">
+    <metrics statements="177" coveredstatements="153" conditionals="30" coveredconditionals="23" methods="53" coveredmethods="39" elements="260" coveredelements="215" complexity="0" loc="177" ncloc="177" packages="1" files="5" classes="5"/>
+    <file name="index.ts" path="/Users/rakshitbharat/hardware/obd-raw-data-parser/src/index.ts">
+      <metrics statements="48" coveredstatements="39" conditionals="19" coveredconditionals="15" methods="4" coveredmethods="4"/>
+      <line num="1" count="1" type="stmt"/>
+      <line num="4" count="1" type="stmt"/>
+      <line num="5" count="47" type="stmt"/>
+      <line num="7" count="47" type="stmt"/>
+      <line num="9" count="47" type="cond" truecount="1" falsecount="0"/>
+      <line num="16" count="5" type="stmt"/>
+      <line num="17" count="5" type="stmt"/>
+      <line num="20" count="42" type="stmt"/>
+      <line num="21" count="42" type="stmt"/>
+      <line num="23" count="42" type="stmt"/>
+      <line num="24" count="174" type="stmt"/>
+      <line num="27" count="42" type="cond" truecount="2" falsecount="0"/>
+      <line num="28" count="40" type="stmt"/>
+      <line num="29" count="40" type="stmt"/>
+      <line num="30" count="40" type="stmt"/>
+      <line num="31" count="1527" type="cond" truecount="1" falsecount="0"/>
+      <line num="32" count="39" type="stmt"/>
+      <line num="34" count="39" type="stmt"/>
+      <line num="35" count="39" type="stmt"/>
+      <line num="37" count="39" type="stmt"/>
+      <line num="38" count="39" type="cond" truecount="0" falsecount="1"/>
+      <line num="39" count="0" type="stmt"/>
+      <line num="42" count="39" type="cond" truecount="3" falsecount="1"/>
+      <line num="44" count="15" type="stmt"/>
+      <line num="45" count="15" type="stmt"/>
+      <line num="47" count="13" type="stmt"/>
+      <line num="48" count="13" type="stmt"/>
+      <line num="50" count="11" type="stmt"/>
+      <line num="56" count="11" type="stmt"/>
+      <line num="58" count="0" type="stmt"/>
+      <line num="68" count="0" type="stmt"/>
+      <line num="70" count="39" type="stmt"/>
+      <line num="73" count="2" type="cond" truecount="1" falsecount="0"/>
+      <line num="74" count="1" type="stmt"/>
+      <line num="75" count="1" type="stmt"/>
+      <line num="76" count="103" type="cond" truecount="0" falsecount="1"/>
+      <line num="77" count="0" type="stmt"/>
+      <line num="78" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="79" count="0" type="stmt"/>
+      <line num="82" count="0" type="stmt"/>
+      <line num="83" count="0" type="stmt"/>
+      <line num="85" count="0" type="stmt"/>
+      <line num="96" count="42" type="stmt"/>
+      <line num="99" count="1" type="stmt"/>
+      <line num="100" count="116" type="stmt"/>
+      <line num="101" count="2" type="cond" truecount="2" falsecount="0"/>
+      <line num="104" count="1" type="stmt"/>
+      <line num="105" count="1" type="stmt"/>
+    </file>
+    <file name="obdInfo.ts" path="/Users/rakshitbharat/hardware/obd-raw-data-parser/src/obdInfo.ts">
+      <metrics statements="108" coveredstatements="93" conditionals="7" coveredconditionals="4" methods="45" coveredmethods="31"/>
+      <line num="6" count="31" type="stmt"/>
+      <line num="11" count="24" type="stmt"/>
+      <line num="15" count="24" type="cond" truecount="0" falsecount="1"/>
+      <line num="16" count="0" type="stmt"/>
+      <line num="18" count="24" type="stmt"/>
+      <line num="22" count="24" type="stmt"/>
+      <line num="23" count="24" type="cond" truecount="1" falsecount="0"/>
+      <line num="24" count="11" type="cond" truecount="1" falsecount="1"/>
+      <line num="26" count="13" type="stmt"/>
+      <line num="30" count="17" type="stmt"/>
+      <line num="34" count="3" type="stmt"/>
+      <line num="35" count="3" type="stmt"/>
+      <line num="36" count="3" type="stmt"/>
+      <line num="37" count="3" type="stmt"/>
+      <line num="38" count="24" type="stmt"/>
+      <line num="39" count="24" type="stmt"/>
+      <line num="40" count="96" type="stmt"/>
+      <line num="43" count="3" type="stmt"/>
+      <line num="53" count="2" type="stmt"/>
+      <line num="56" count="2" type="cond" truecount="1" falsecount="0"/>
+      <line num="57" count="1" type="stmt"/>
+      <line num="59" count="2" type="stmt"/>
+      <line num="69" count="1" type="stmt"/>
+      <line num="70" count="1" type="cond" truecount="1" falsecount="1"/>
+      <line num="71" count="1" type="stmt"/>
+      <line num="72" count="1" type="stmt"/>
+      <line num="79" count="2" type="stmt"/>
+      <line num="82" count="3" type="stmt"/>
+      <line num="85" count="3" type="stmt"/>
+      <line num="88" count="1" type="stmt"/>
+      <line num="91" count="0" type="stmt"/>
+      <line num="94" count="2" type="stmt"/>
+      <line num="97" count="1" type="stmt"/>
+      <line num="100" count="0" type="stmt"/>
+      <line num="103" count="1" type="stmt"/>
+      <line num="106" count="1" type="stmt"/>
+      <line num="109" count="0" type="stmt"/>
+      <line num="112" count="0" type="stmt"/>
+      <line num="115" count="0" type="stmt"/>
+      <line num="118" count="0" type="stmt"/>
+      <line num="133" count="3" type="stmt"/>
+      <line num="137" count="3" type="stmt"/>
+      <line num="141" count="1" type="stmt"/>
+      <line num="144" count="0" type="stmt"/>
+      <line num="147" count="0" type="stmt"/>
+      <line num="156" count="1" type="stmt"/>
+      <line num="160" count="1" type="stmt"/>
+      <line num="164" count="2" type="stmt"/>
+      <line num="167" count="1" type="stmt"/>
+      <line num="170" count="1" type="stmt"/>
+      <line num="173" count="0" type="stmt"/>
+      <line num="176" count="1" type="stmt"/>
+      <line num="179" count="0" type="stmt"/>
+      <line num="196" count="2" type="stmt"/>
+      <line num="202" count="2" type="stmt"/>
+      <line num="211" count="1" type="stmt"/>
+      <line num="217" count="1" type="stmt"/>
+      <line num="220" count="1" type="stmt"/>
+      <line num="223" count="1" type="stmt"/>
+      <line num="233" count="0" type="stmt"/>
+      <line num="240" count="0" type="stmt"/>
+      <line num="243" count="0" type="stmt"/>
+      <line num="246" count="0" type="stmt"/>
+      <line num="250" count="1" type="stmt"/>
+      <line num="254" count="1" type="stmt"/>
+      <line num="255" count="1" type="stmt"/>
+      <line num="256" count="1" type="stmt"/>
+      <line num="259" count="1" type="stmt"/>
+      <line num="274" count="1" type="stmt"/>
+      <line num="275" count="1" type="stmt"/>
+      <line num="276" count="1" type="stmt"/>
+      <line num="277" count="1" type="stmt"/>
+      <line num="278" count="1" type="stmt"/>
+      <line num="279" count="1" type="stmt"/>
+      <line num="280" count="1" type="stmt"/>
+      <line num="281" count="1" type="stmt"/>
+      <line num="282" count="1" type="stmt"/>
+      <line num="283" count="1" type="stmt"/>
+      <line num="284" count="1" type="stmt"/>
+      <line num="285" count="1" type="stmt"/>
+      <line num="286" count="1" type="stmt"/>
+      <line num="287" count="1" type="stmt"/>
+      <line num="288" count="1" type="stmt"/>
+      <line num="289" count="1" type="stmt"/>
+      <line num="290" count="1" type="stmt"/>
+      <line num="291" count="1" type="stmt"/>
+      <line num="292" count="1" type="stmt"/>
+      <line num="293" count="1" type="stmt"/>
+      <line num="294" count="1" type="stmt"/>
+      <line num="295" count="1" type="stmt"/>
+      <line num="296" count="1" type="stmt"/>
+      <line num="297" count="1" type="stmt"/>
+      <line num="298" count="1" type="stmt"/>
+      <line num="299" count="1" type="stmt"/>
+      <line num="300" count="1" type="stmt"/>
+      <line num="301" count="1" type="stmt"/>
+      <line num="302" count="1" type="stmt"/>
+      <line num="303" count="1" type="stmt"/>
+      <line num="304" count="1" type="stmt"/>
+      <line num="305" count="1" type="stmt"/>
+      <line num="306" count="1" type="stmt"/>
+      <line num="307" count="1" type="stmt"/>
+      <line num="308" count="1" type="stmt"/>
+      <line num="309" count="1" type="stmt"/>
+      <line num="310" count="1" type="stmt"/>
+      <line num="311" count="1" type="stmt"/>
+      <line num="312" count="1" type="stmt"/>
+      <line num="313" count="1" type="stmt"/>
+    </file>
+    <file name="obdPIDS.ts" path="/Users/rakshitbharat/hardware/obd-raw-data-parser/src/obdPIDS.ts">
+      <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <line num="1" count="1" type="stmt"/>
+      <line num="2" count="1" type="stmt"/>
+      <line num="44" count="1" type="stmt"/>
+      <line num="46" count="1" type="stmt"/>
+      <line num="1253" count="1" type="stmt"/>
+    </file>
+    <file name="obdTypes.ts" path="/Users/rakshitbharat/hardware/obd-raw-data-parser/src/obdTypes.ts">
+      <metrics statements="5" coveredstatements="5" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
+      <line num="13" count="1" type="cond" truecount="2" falsecount="0"/>
+      <line num="14" count="1" type="stmt"/>
+      <line num="15" count="1" type="stmt"/>
+      <line num="16" count="1" type="stmt"/>
+      <line num="17" count="1" type="stmt"/>
+    </file>
+    <file name="obdUtils.ts" path="/Users/rakshitbharat/hardware/obd-raw-data-parser/src/obdUtils.ts">
+      <metrics statements="11" coveredstatements="11" conditionals="2" coveredconditionals="2" methods="3" coveredmethods="3"/>
+      <line num="1" count="1" type="stmt"/>
+      <line num="2" count="21" type="stmt"/>
+      <line num="5" count="1" type="stmt"/>
+      <line num="6" count="12" type="cond" truecount="1" falsecount="0"/>
+      <line num="7" count="4" type="stmt"/>
+      <line num="9" count="8" type="stmt"/>
+      <line num="10" count="8" type="stmt"/>
+      <line num="14" count="8" type="stmt"/>
+      <line num="15" count="8" type="cond" truecount="1" falsecount="0"/>
+      <line num="16" count="2" type="stmt"/>
+      <line num="18" count="6" type="stmt"/>
+    </file>
+  </project>
+</coverage>

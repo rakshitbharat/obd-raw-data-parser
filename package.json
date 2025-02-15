@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "husky install && chmod +x .husky/pre-commit && chmod +x .husky/commit-msg",
-    "test": "jest --coverage",
+    "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
