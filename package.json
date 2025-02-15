@@ -1,0 +1,48 @@
+{
+  "name": "obd-raw-data-parser",
+  "version": "1.0.0",
+  "description": "A lightweight library for parsing OBD-II raw data into human readable format",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "husky install",
+    "test": "jest --coverage",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "semantic-release": "semantic-release"
+  },
+  "keywords": [
+    "obd",
+    "obd2",
+    "obdii",
+    "car",
+    "diagnostic",
+    "parser"
+  ],
+  "author": "Rakshit Bharat",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rakshitbharat/obd-raw-data-parser.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rakshitbharat/obd-raw-data-parser/issues"
+  },
+  "homepage": "https://github.com/rakshitbharat/obd-raw-data-parser#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^17.0.0",
+    "@commitlint/config-conventional": "^17.0.0",
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/git": "^10.0.0",
+    "@types/jest": "^29.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.0.0",
+    "husky": "^8.0.0",
+    "jest": "^29.0.0",
+    "semantic-release": "^21.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^4.9.5"
+  }
+}

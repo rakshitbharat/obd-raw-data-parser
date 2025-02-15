@@ -1,0 +1,5 @@
+
+
+
+
+npx --no -- commitlint --edit $1. "$(dirname -- "$0")/_/husky.sh"#!/usr/bin/env sh
