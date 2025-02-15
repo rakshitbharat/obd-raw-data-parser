@@ -133,9 +133,13 @@ Contributions are welcome! Here's how you can help:
 4. 🚀 Push to branch: `git push origin feature/amazing`
 5. 🎉 Submit a pull request
 
-## 💖 Credits
+## 💝 Special Thanks
 
-Built with inspiration from [obd-utils](https://github.com/Nishkalkashyap/obd-utils) by [@Nishkalkashyap](https://github.com/Nishkalkashyap).
+This library would not have been possible without the excellent work done by [obd-utils](https://github.com/Nishkalkashyap/obd-utils). A huge thank you to [@Nishkalkashyap](https://github.com/Nishkalkashyap) for creating the original implementation that inspired this library.
+
+The OBD-II PID definitions, conversion algorithms, and core parsing logic are based on their excellent work. We've built upon their foundation to create a TypeScript-first, fully tested implementation with additional features and improvements.
+
+If you're interested in OBD-II development, we highly recommend checking out their original work.
 
 ## 📄 License
 

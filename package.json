@@ -1,7 +1,7 @@
 {
   "name": "obd-raw-data-parser",
   "version": "1.0.0",
-  "description": "A lightweight library for parsing OBD-II raw data into human readable format",
+  "description": "A lightweight TypeScript library for parsing OBD-II raw data into human readable format. Based on the excellent work of obd-utils by Nishkalkashyap.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -21,7 +21,11 @@
     "obdii",
     "car",
     "diagnostic",
-    "parser"
+    "parser",
+    "automotive",
+    "vehicle",
+    "ecu",
+    "elm327"
   ],
   "author": "Rakshit Bharat",
   "license": "MIT",
