@@ -4,11 +4,9 @@
 
   [![NPM Version](https://img.shields.io/npm/v/obd-raw-data-parser.svg)](https://www.npmjs.com/package/obd-raw-data-parser)
   [![Build Status](https://github.com/rakshitbharat/obd-raw-data-parser/workflows/CI/badge.svg)](https://github.com/rakshitbharat/obd-raw-data-parser/actions)
-  [![codecov](https://codecov.io/gh/rakshitbharat/obd-raw-data-parser/branch/main/graph/badge.svg)](https://codecov.io/gh/rakshitbharat/obd-raw-data-parser)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
   [![Downloads](https://img.shields.io/npm/dm/obd-raw-data-parser.svg)](https://www.npmjs.com/package/obd-raw-data-parser)
 
-  <img src="https://raw.githubusercontent.com/rakshitbharat/obd-raw-data-parser/main/docs/images/demo.png" alt="OBD Parser Demo" width="600">
 </div>
 
 ## ✨ Features
