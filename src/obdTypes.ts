@@ -7,7 +7,7 @@ export interface IObdPID {
   min: number;
   max: number;
   unit: string;
-  convertToUseful?: ((...args: string[]) => number | string | Record<string, any>);
+  convertToUseful?: ((...args: string[]) => number | string | Record<string, number> | boolean[] | Record<string, number | undefined>);
 }
 
 export enum Modes {
@@ -19,7 +19,7 @@ export enum Modes {
 
 export interface IParsedOBDResponse
   extends Partial<Pick<IObdPID, 'mode' | 'pid' | 'name' | 'unit'>> {
-  value?: number | string | Record<string, any>;
+  value?: number | string | Record<string, number> | boolean[];
 }
 
 export type IObdPIDDescriptor = Omit<IObdPID, 'convertToUseful'>;

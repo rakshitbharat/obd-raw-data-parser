@@ -367,11 +367,9 @@ describe('OBD Conversion Functions', () => {
       const result = parseOBDResponse('41 00 FF FF FF FF').value;
       expect(Array.isArray(result)).toBe(true);
       expect(result).toBeDefined();
-      if (result) {
-        if (Array.isArray(result)) {
-          expect(result.length).toBeGreaterThan(0);
-        }
-      }
+      // Remove conditional expect and make it type safe
+      const arrayResult = result as boolean[];
+      expect(arrayResult.length).toBeGreaterThan(0);
     });
 
     test('should handle no supported PIDs', () => {
