@@ -98,6 +98,60 @@ const pids = getAllPIDs();
 console.log(`Supporting ${pids.length} parameters`);
 ```
 
+### DTC (Diagnostic Trouble Codes) Decoding
+```typescript
+import { DTCBaseDecoder } from 'obd-raw-data-parser';
+
+// Create a decoder instance for CAN protocol
+const canDecoder = new DTCBaseDecoder({
+  isCan: true,                // Use CAN protocol
+  serviceMode: '03',          // Mode 03 for current DTCs
+  troubleCodeType: 'CURRENT', // Type of DTCs being decoded
+  logPrefix: 'MyApp'          // Optional prefix for logs
+});
+
+// Example: Decoding current DTCs from CAN response
+const rawBytes = [[0x43, 0x02, 0x01, 0x43, 0x01, 0x96, 0x02, 0x34]];
+const dtcs = canDecoder.decodeDTCs(rawBytes);
+console.log(dtcs); // ['P0143', 'P0196', 'P0234']
+
+// Create a decoder for non-CAN protocol and pending DTCs
+const nonCanDecoder = new DTCBaseDecoder({
+  isCan: false,
+  serviceMode: '07',          // Mode 07 for pending DTCs
+  troubleCodeType: 'PENDING',
+  logPrefix: 'MyApp'
+});
+
+// Parse DTC status byte
+const status = canDecoder.parseDTCStatus(0x8C);
+console.log(status);
+/* Output:
+{
+  milActive: true,        // Malfunction Indicator Lamp status
+  dtcCount: 12,          // Number of DTCs
+  currentError: false,
+  pendingError: false,
+  confirmedError: true,
+  egrSystem: true,
+  oxygenSensor: false,
+  catalyst: false
+}
+*/
+```
+
+#### Available DTC Modes
+- `03`: Current DTCs
+- `07`: Pending DTCs
+- `0A`: Permanent DTCs
+
+#### Features
+- 🚗 Supports both CAN and non-CAN protocols
+- 📝 Decodes multiple DTCs from a single response
+- 🔍 Detailed status information parsing
+- ⚡ Efficient raw byte processing
+- ✅ Type-safe error handling
+
 ## 📈 Real-World Example
 
 ```typescript
