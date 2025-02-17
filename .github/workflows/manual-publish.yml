@@ -19,14 +19,14 @@ jobs:
         with:
           node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'
+          scope: '@rakshitbharat'  # Replace with your npm scope if you have one
 
       - name: Install dependencies
         run: npm ci
 
-      # Add NPM authentication step
-      - name: Authenticate with NPM
+      - name: Verify NPM Authentication
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
           npm whoami
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
