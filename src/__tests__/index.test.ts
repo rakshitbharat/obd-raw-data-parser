@@ -1,4 +1,9 @@
-import { parseOBDResponse, getPIDInfo, getAllPIDs } from "../index";
+import {
+  parseOBDResponse,
+  getPIDInfo,
+  getAllPIDs,
+  //DTCBaseDecoder,
+} from "../index";
 import { checkHex, Hex2Bin } from "../obdUtils";
 
 describe("OBD Parser", () => {
@@ -383,3 +388,138 @@ describe("OBD Conversion Functions", () => {
     });
   });
 });
+
+// describe("DTC Decoder", () => {
+//   describe("CAN Protocol", () => {
+//     const canConfig = {
+//       isCan: true,
+//       serviceMode: "03",
+//       troubleCodeType: "CURRENT",
+//       logPrefix: "TEST",
+//     };
+
+//     test("should decode Mode 03 (Current DTCs) for CAN protocol", () => {
+//       const decoder = new DTCBaseDecoder(canConfig);
+//       const rawBytes = [
+//         [
+//           0x43, // Mode 03
+//           0x88,
+//           0x01,
+//           0x43, // MIL + Current error (P0143)
+//           0x88,
+//           0x01,
+//           0x96, // MIL + Current error (P0196)
+//           0x88,
+//           0x02,
+//           0x34, // MIL + Current error (P0234)
+//         ],
+//       ];
+//       const dtcs = decoder.decodeDTCs(rawBytes);
+//       expect(dtcs).toEqual(["P0143", "P0196", "P0234"]);
+//     });
+
+//     test("should decode Mode 07 (Pending DTCs) for CAN protocol", () => {
+//       const decoder = new DTCBaseDecoder({
+//         ...canConfig,
+//         serviceMode: "07",
+//         troubleCodeType: "PENDING",
+//       });
+//       const rawBytes = [
+//         [
+//           0x47, // Mode 07
+//           0x84,
+//           0x01,
+//           0x33, // MIL + Pending error (P0133)
+//         ],
+//       ];
+//       const dtcs = decoder.decodeDTCs(rawBytes);
+//       expect(dtcs).toEqual(["P0133"]);
+//     });
+
+//     test("should decode Mode 0A (Permanent DTCs) for CAN protocol", () => {
+//       const decoder = new DTCBaseDecoder({
+//         ...canConfig,
+//         serviceMode: "0A",
+//         troubleCodeType: "PERMANENT",
+//       });
+//       const rawBytes = [
+//         [
+//           0x4a, // Mode 0A
+//           0x90,
+//           0x04,
+//           0x01, // MIL + Permanent error (P0401)
+//         ],
+//       ];
+//       const dtcs = decoder.decodeDTCs(rawBytes);
+//       expect(dtcs).toEqual(["P0401"]);
+//     });
+//   });
+
+//   describe("Non-CAN Protocol", () => {
+//     const nonCanConfig = {
+//       isCan: false,
+//       serviceMode: "03",
+//       troubleCodeType: "CURRENT",
+//       logPrefix: "TEST",
+//     };
+
+//     test("should decode Mode 03 DTCs for non-CAN protocol", () => {
+//       const decoder = new DTCBaseDecoder(nonCanConfig);
+//       const rawBytes = [
+//         [
+//           0x43, // Mode 03
+//           0x01,
+//           0x33, // P0133
+//           0x02,
+//           0x34, // P0234 (test multiple codes)
+//         ],
+//       ];
+//       const dtcs = decoder.decodeDTCs(rawBytes);
+//       expect(dtcs).toEqual(["P0133", "P0234"]);
+//     });
+
+//     test("should handle empty response", () => {
+//       const decoder = new DTCBaseDecoder(nonCanConfig);
+//       const rawBytes: number[][] = [];
+//       const dtcs = decoder.decodeDTCs(rawBytes);
+//       expect(dtcs).toEqual([]);
+//     });
+//   });
+
+//   describe("DTC Status", () => {
+//     test("should parse DTC status byte correctly", () => {
+//       const decoder = new DTCBaseDecoder({
+//         isCan: true,
+//         serviceMode: "03",
+//         troubleCodeType: "CURRENT",
+//         logPrefix: "TEST",
+//       });
+
+//       const status = decoder.parseDTCStatus(0x8c); // 1000 1100 in binary
+//       expect(status).toEqual({
+//         milActive: true,
+//         dtcCount: 0x0c,
+//         currentError: false,
+//         pendingError: false,
+//         confirmedError: true,
+//         egrSystem: true,
+//         oxygenSensor: false,
+//         catalyst: false,
+//       });
+//     });
+//   });
+
+//   describe("Error Handling", () => {
+//     test("should handle invalid service mode", () => {
+//       const decoder = new DTCBaseDecoder({
+//         isCan: true,
+//         serviceMode: "XX", // Invalid mode
+//         troubleCodeType: "CURRENT",
+//         logPrefix: "TEST",
+//       });
+//       const rawBytes = [[0x43, 0x01, 0x33, 0x00, 0x00]];
+//       const dtcs = decoder.decodeDTCs(rawBytes);
+//       expect(dtcs).toEqual([]);
+//     });
+//   });
+// });
