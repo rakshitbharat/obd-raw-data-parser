@@ -395,7 +395,7 @@ describe("DTC Decoder", () => {
       logPrefix: "TEST",
     };
 
-    test("should decode DTCs from non-CAN mode 03 response", () => {
+    test("should decode DTCs from non-CAN mode 03 response with data", () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
@@ -412,7 +412,58 @@ describe("DTC Decoder", () => {
       expect(result).toEqual(["P0101", "P0113", "U114B"]);
     });
 
-    test("should decode multiple DTCs from CAN format", () => {
+    test("should decode DTCs from non-CAN mode 07 response with data", () => {
+      const decoder = new DTCBaseDecoder({
+        ...baseConfig,
+        isCan: false,
+        serviceMode: "07",
+        troubleCodeType: "PENDING",
+      });
+
+      // From DTC_WITH_DATA_EXAMPLE.txt
+      const response = [
+        [52, 55, 48, 49, 48, 49, 48, 49, 49, 51, 68, 49, 52, 66, 13],
+        [13, 62],
+      ];
+      const result = decoder.decodeDTCs(response);
+      expect(result).toEqual(["P0101", "P0113", "U114B"]);
+    });
+
+    test("should handle NO DATA response in non-CAN format", () => {
+      const decoder = new DTCBaseDecoder({
+        ...baseConfig,
+        isCan: false,
+        serviceMode: "0A",
+        troubleCodeType: "PERMANENT",
+      });
+
+      // From DTC_9141_2.txt
+      const response = [
+        [78, 79, 32, 68, 65, 84, 65, 13],
+        [13, 62],
+      ];
+      const result = decoder.decodeDTCs(response);
+      expect(result).toEqual([]);
+    });
+
+    test("should handle empty DTCs in non-CAN format", () => {
+      const decoder = new DTCBaseDecoder({
+        ...baseConfig,
+        isCan: false,
+        serviceMode: "03",
+        troubleCodeType: "CURRENT",
+      });
+
+      // From DTC_NO_DATA_EXAMPLE.txt
+      const response = [
+        [52, 51, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 13],
+        [13, 62],
+      ];
+      const result = decoder.decodeDTCs(response);
+      expect(result).toEqual([]);
+    });
+
+    test("should decode multiple DTCs from CAN format mode 03", () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: true,
@@ -441,5 +492,84 @@ describe("DTC Decoder", () => {
         "U2222",
       ]);
     });
+
+    test("should decode multiple DTCs from CAN format mode 07", () => {
+      const decoder = new DTCBaseDecoder({
+        ...baseConfig,
+        isCan: true,
+        serviceMode: "07",
+        troubleCodeType: "PENDING",
+      });
+
+      // From BASIC.txt CAN format
+      const response = [
+        [
+          48, 49, 48, 13, 48, 58, 52, 55, 48, 55, 48, 49, 48, 49, 48, 49, 49,
+          51, 13,
+        ],
+        [49, 58, 68, 49, 52, 66, 68, 49, 53, 66, 68, 49, 53, 69, 68, 49, 13],
+        [50, 58, 54, 52, 69, 50, 50, 50, 48, 48, 48, 48, 48, 48, 48, 48, 13],
+        [51, 58, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 13],
+        [13, 62],
+      ];
+      const result = decoder.decodeDTCs(response);
+      expect(result).toEqual([
+        "P0101",
+        "P0113",
+        "U114B",
+        "U115B",
+        "U115E",
+        "U1164",
+        "U2222",
+      ]);
+    });
+
+    test("should decode multiple DTCs from CAN format mode 0A", () => {
+      const decoder = new DTCBaseDecoder({
+        ...baseConfig,
+        isCan: true,
+        serviceMode: "0A",
+        troubleCodeType: "PERMANENT",
+      });
+
+      // From BASIC.txt CAN format
+      const response = [
+        [
+          48, 49, 48, 13, 48, 58, 52, 65, 48, 55, 48, 49, 48, 49, 48, 49, 49,
+          51, 13,
+        ],
+        [49, 58, 68, 49, 52, 66, 68, 49, 53, 66, 68, 49, 53, 69, 68, 49, 13],
+        [50, 58, 54, 52, 69, 50, 50, 50, 48, 48, 48, 48, 48, 48, 48, 48, 13],
+        [51, 58, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 13],
+        [13, 62],
+      ];
+      const result = decoder.decodeDTCs(response);
+      expect(result).toEqual([
+        "P0101",
+        "P0113",
+        "U114B",
+        "U115B",
+        "U115E",
+        "U1164",
+        "U2222",
+      ]);
+    });
+
+    // test("should handle numeric DTC response in non-CAN format", () => {
+    //   const decoder = new DTCBaseDecoder({
+    //     ...baseConfig,
+    //     isCan: false,
+    //     serviceMode: "0A",
+    //     troubleCodeType: "PERMANENT",
+    //   });
+
+    //   // From DTC_NO_DATA_EXAMPLE.txt
+    //   const response = [
+    //     [48, 49, 55, 70, 51, 49, 13],
+    //     [13, 62],
+    //   ];
+    //   const result = decoder.decodeDTCs(response);
+    //   expect(result).toEqual(["P17F31"]);
+    // });
   });
 });
