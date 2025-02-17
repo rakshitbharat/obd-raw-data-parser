@@ -77,7 +77,7 @@ export class CanDecoder extends BaseDecoder {
     return Array.from(dtcs);
   }
 
-  protected _log(_level: LogLevel, ..._message: any[]): void {
+  protected _log(_level: LogLevel, ..._message: unknown[]): void {
     // Implementation provided by parent
   }
 

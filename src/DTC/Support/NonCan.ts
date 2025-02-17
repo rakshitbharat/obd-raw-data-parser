@@ -95,7 +95,7 @@ export class NonCanDecoder extends BaseDecoder {
     }
   }
 
-  protected _log(_level: LogLevel, ..._message: any[]): void {
+  protected _log(_level: LogLevel, ..._message: unknown[]): void {
     // Implementation provided by parent
   }
 

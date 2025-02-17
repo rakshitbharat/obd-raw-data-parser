@@ -39,5 +39,5 @@ export interface DecoderConfig {
 }
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-export type LogFunction = (level: LogLevel, ...message: any[]) => void;
+export type LogFunction = (level: LogLevel, ...message: unknown[]) => void;
 export type SetDTCFunction = (dtc: string) => void;

@@ -2,8 +2,8 @@ import { DTCObject, LogLevel, DTCModes } from '../dtc';
 
 export abstract class BaseDecoder {
   protected rawDtcObjects: DTCObject[] = [];
-  protected expectedDTCCount: number = 0;
-  protected currentDTCCount: number = 0;
+  protected expectedDTCCount = 0;
+  protected currentDTCCount = 0;
   protected leftoverByte: string | null = null;
   protected DTC_MODES: DTCModes = {
     CURRENT: { RESPONSE: 0x43, DESCRIPTION: 'Current DTCs' },
@@ -27,7 +27,7 @@ export abstract class BaseDecoder {
   }
 
   public abstract decodeDTCs(rawResponseBytes: number[][]): string[];
-  protected abstract _log(level: LogLevel, ...message: any[]): void;
+  protected abstract _log(level: LogLevel, ...message: unknown[]): void;
   protected abstract setDTC(dtc: string): void;
   protected abstract getModeResponseByte(): number;
 
