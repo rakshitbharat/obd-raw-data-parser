@@ -412,34 +412,34 @@ describe("DTC Decoder", () => {
       expect(result).toEqual(["P0101", "P0113", "U114B"]);
     });
 
-    // test("should decode multiple DTCs from CAN format", () => {
-    //   const decoder = new DTCBaseDecoder({
-    //     ...baseConfig,
-    //     isCan: true,
-    //     serviceMode: "03",
-    //     troubleCodeType: "CURRENT",
-    //   });
+    test("should decode multiple DTCs from CAN format", () => {
+      const decoder = new DTCBaseDecoder({
+        ...baseConfig,
+        isCan: true,
+        serviceMode: "03",
+        troubleCodeType: "CURRENT",
+      });
 
-    //   // From BASIC.txt CAN format
-    //   const response = [
-    //     [
-    //       48, 49, 48, 13, 48, 58, 52, 51, 48, 55, 48, 49, 48, 49, 48, 49, 49,
-    //       51, 13,
-    //     ],
-    //     [49, 58, 68, 49, 52, 66, 68, 49, 53, 66, 68, 49, 53, 69, 68, 49, 13],
-    //     [50, 58, 54, 52, 69, 50, 50, 50, 48, 48, 48, 48, 48, 48, 48, 48, 13],
-    //     [13, 62],
-    //   ];
-    //   const result = decoder.decodeDTCs(response);
-    //   expect(result).toEqual([
-    //     "P0101",
-    //     "P0113",
-    //     "U114B",
-    //     "U115B",
-    //     "U115E",
-    //     "U1164",
-    //     "U2222",
-    //   ]);
-    // });
+      // From BASIC.txt CAN format
+      const response = [
+        [
+          48, 49, 48, 13, 48, 58, 52, 51, 48, 55, 48, 49, 48, 49, 48, 49, 49,
+          51, 13,
+        ],
+        [49, 58, 68, 49, 52, 66, 68, 49, 53, 66, 68, 49, 53, 69, 68, 49, 13],
+        [50, 58, 54, 52, 69, 50, 50, 50, 48, 48, 48, 48, 48, 48, 48, 48, 13],
+        [13, 62],
+      ];
+      const result = decoder.decodeDTCs(response);
+      expect(result).toEqual([
+        "P0101",
+        "P0113",
+        "U114B",
+        "U115B",
+        "U115E",
+        "U1164",
+        "U2222",
+      ]);
+    });
   });
 });
