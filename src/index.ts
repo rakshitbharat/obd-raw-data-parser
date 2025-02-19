@@ -97,6 +97,23 @@ export function parseOBDResponse(hexString: string): IParsedOBDResponse {
         ) as IParsedOBDResponse["value"];
       }
     }
+  } else if (valueArray[0] === "49") {
+    reply.mode = valueArray[0] as Modes;
+    reply.pid = valueArray[1];
+    for (let i = 0; i < responsePIDS.length; i++) {
+      if (responsePIDS[i].mode === "09" && responsePIDS[i].pid === reply.pid) {
+        reply.name = responsePIDS[i].name;
+        reply.unit = responsePIDS[i].unit;
+
+        const convertToUseful = responsePIDS[i].convertToUseful;
+        if (!convertToUseful) {
+          break;
+        }
+
+        reply.value = convertToUseful(hexString) as IParsedOBDResponse["value"];
+        break;
+      }
+    }
   }
   return reply;
 }
@@ -111,3 +128,4 @@ export function getAllPIDs(): IObdPIDDescriptor[] {
 }
 
 export { DTCBaseDecoder } from "./DTC/DTCBaseDecoder";
+export { VinDecoder } from "./VIN/VinDecoder";
