@@ -108,14 +108,47 @@ console.log(pidInfo);
 */
 ```
 
-### Get All Supported PIDs
+### VIN (Vehicle Identification Number) Decoding
 
 ```typescript
-import { getAllPIDs } from "obd-raw-data-parser";
+import { VinDecoder } from "obd-raw-data-parser";
 
-const pids = getAllPIDs();
-console.log(`Supporting ${pids.length} parameters`);
+// Process segmented VIN response (common format)
+const segmentedResponse = '014\r0:49020157304C\r1:4A443745433247\r2:42353839323737\r\r>';
+const vin1 = VinDecoder.processVINResponse(segmentedResponse);
+console.log(vin1); // 'W0LJD7EC2GB589277'
+
+// Process non-segmented hex format
+const hexResponse = '49020157304C4A443745433247423538393237373E';
+const vin2 = VinDecoder.processVINSegments(hexResponse);
+console.log(vin2); // 'W0LJD7EC2GB589277'
+
+// Process VIN from byte array format
+const byteArrayResponse = [
+  [48,49,52,13,48,58,52,57,48,50,48,49,53,55,51,48,52,67,13],
+  [49,58,52,65,52,52,51,55,52,53,52,51,51,50,52,55,13],
+  [50,58,52,50,51,53,51,56,51,57,51,50,51,55,51,55,13],
+  [13,62]
+];
+const vin3 = VinDecoder.processVINByteArray(byteArrayResponse);
+console.log(vin3); // 'W0LJD7EC2GB589277'
+
+// Validate if response contains VIN data
+console.log(VinDecoder.isVinData('0902')); // true
+console.log(VinDecoder.isVinData('490201')); // true
+
+// Validate a VIN string
+console.log(VinDecoder.validateVIN('W0LJD7EC2GB589277')); // true
+console.log(VinDecoder.validateVIN('INVALID-VIN')); // false
 ```
+
+The VIN decoder supports multiple raw data formats:
+- Segmented responses (with line numbers and colons)
+- Non-segmented hex string format
+- Byte array format
+- Multiple standards (0902, 490201)
+
+All decoding methods include built-in validation and error handling, returning `null` for invalid inputs.
 
 ### DTC (Diagnostic Trouble Codes) Decoding
 
