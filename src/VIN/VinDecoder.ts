@@ -1,92 +1,127 @@
-import { byteArrayToString, hexToBytes } from '../utils';
+import { hexToBytes } from '../utils';
 
-type VinInput = number[][] | string | null | undefined;
-
-/**
- * VinDecoder class for handling Vehicle Identification Number (VIN) decoding from OBD-II responses
- */
 export class VinDecoder {
-  /**
-   * Validates if a string is a valid VIN
-   */
-  private static isValidVin(vin: string): boolean {
-    return vin.length === 17 && /^[A-HJ-NPR-Z0-9]{17}$/.test(vin);
+  private static readonly VALID_VIN_PATTERN = /^[A-HJ-NPR-Z0-9]{17}$/;
+
+  static isVinData(obdData: string): boolean {
+    return typeof obdData === 'string' && 
+           (obdData.includes('0902') || obdData.includes('490201'));
   }
 
-  /**
-   * Process byte array frame format
-   */
-  private static processFrameData(frames: number[][]): string {
-    try {
-      let vinData = '';
-      for (const frame of frames) {
-        // Convert frame bytes to string using utility function
-        const frameStr = byteArrayToString(frame);
+  static validateVIN(vin: string): boolean {
+    return this.VALID_VIN_PATTERN.test(vin);
+  }
 
-        // Extract data portion after frame number
-        const matches = frameStr.match(/\d+:([0-9A-Fa-f]+)/);
-        if (matches && matches[1]) {
-          // Remove service mode and PID (4902)
-          const cleanData = matches[1].replace(/^4902/, '');
-          vinData += cleanData;
+  private static cleanHexData(data: string): string {
+    return data
+      .replace(/>/g, '')
+      .replace(/\r/g, '')
+      .replace(/\n/g, '')
+      .replace(/\s+/g, '')
+      .replace(/490201/g, '')
+      .replace(/4902/g, '')
+      .replace(/014/g, '')
+      .replace(/\d+:/g, '')
+      .toUpperCase();
+  }
+
+  private static processHexData(hexString: string): string | null {
+    try {
+      // Validate hex string
+      if (!/^[0-9A-F]+$/i.test(hexString)) {
+        return null;
+      }
+
+      // Convert hex to ASCII
+      const bytes = hexToBytes(hexString);
+      const ascii = String.fromCharCode(...bytes);
+      
+      // Look for valid VIN pattern
+      const vinMatches = ascii.match(/[A-HJ-NPR-Z0-9]{17}/g) || [];
+      
+      // Return the first valid VIN found
+      for (const match of vinMatches) {
+        if (this.validateVIN(match)) {
+          return match;
         }
       }
       
-      // Convert final hex string to ASCII
-      return this.hexToString(vinData);
-    } catch (error) {
-      console.error("Error processing frame data:", error);
-      return '';
+      return null;
+    } catch {
+      return null;
     }
   }
 
-  /**
-   * Process hex string format directly to string
-   */
-  private static hexToString(hex: string): string {
+  static processVINByteArray(byteArray: number[][]): string | null {
+    if (!byteArray || !Array.isArray(byteArray)) return null;
+    
     try {
-      // Clean up the hex string
-      const cleanHex = hex.replace(/[^A-F0-9]/gi, '').toUpperCase();
-      
-      // Remove service mode and PID if present
-      const vinHex = cleanHex.replace(/^4902/, '');
-      
-      // Convert hex to bytes using utility function
-      const bytes = hexToBytes(vinHex);
-      
-      // Convert bytes to string using utility function
-      return byteArrayToString(bytes);
+      // Convert byte array to string
+      const rawData = byteArray
+        .map(arr => String.fromCharCode(...arr))
+        .join('');
+
+      // Extract hex data from segments
+      const segments = rawData.match(/\d+:([0-9A-F]+)/gi);
+      if (!segments) return null;
+
+      // Join segments and process
+      const hexData = segments
+        .map(seg => seg.split(':')[1] || '')
+        .join('');
+
+      return this.processHexData(this.cleanHexData(hexData));
     } catch (error) {
-      console.error("Error converting hex to string:", error);
-      return '';
+      console.error('Error processing VIN byte array:', error);
+      return null;
     }
   }
 
-  /**
-   * Decodes VIN from raw OBD data
-   * @param rawData Raw OBD data containing VIN information (byte array or hex string)
-   * @returns Decoded VIN or empty string if invalid
-   */
-  public static decodeVin(rawData: VinInput): string {
+  static processVINResponse(response: string): string | null {
+    if (!response) return null;
+
     try {
-      if (!rawData) return "";
-
-      let decodedVin = '';
-
-      // Handle byte array format
-      if (Array.isArray(rawData)) {
-        decodedVin = this.processFrameData(rawData);
-      }
-      // Handle hex string format
-      else if (typeof rawData === 'string') {
-        decodedVin = this.hexToString(rawData);
+      // Handle segmented format
+      if (response.includes(':')) {
+        const segments = response.match(/\d+:([0-9A-F]+)/gi);
+        if (segments) {
+          const hexData = segments
+            .map(seg => seg.split(':')[1] || '')
+            .join('');
+          return this.processHexData(this.cleanHexData(hexData));
+        }
       }
 
-      // Validate and return the VIN
-      return this.isValidVin(decodedVin) ? decodedVin : "";
+      // Handle non-segmented format
+      const cleaned = this.cleanHexData(response);
+
+      // Check for direct VIN format first
+      if (this.validateVIN(cleaned)) {
+        return cleaned;
+      }
+
+      return this.processHexData(cleaned);
     } catch (error) {
-      console.error("Error decoding VIN:", error);
-      return "";
+      console.error('Error processing VIN response:', error);
+      return null;
+    }
+  }
+
+  static processVINSegments(rawData: string): string | null {
+    if (!rawData || typeof rawData !== 'string') return null;
+
+    try {
+      const cleaned = this.cleanHexData(rawData);
+
+      // Check for direct VIN format first
+      if (this.validateVIN(cleaned)) {
+        return cleaned;
+      }
+
+      return this.processHexData(cleaned);
+    } catch (error) {
+      console.error('Error processing VIN segments:', error);
+      return null;
     }
   }
 }
