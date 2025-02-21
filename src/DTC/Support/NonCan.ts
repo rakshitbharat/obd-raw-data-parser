@@ -1,4 +1,4 @@
-import { LogLevel } from '../dtc';
+import { LogLevel, DTCObject } from '../dtc';
 import { BaseDecoder } from './BaseDecoder';
 
 export class NonCanDecoder extends BaseDecoder {
@@ -106,5 +106,31 @@ export class NonCanDecoder extends BaseDecoder {
   protected getModeResponseByte(): number {
     // Implementation provided by parent
     return 0;
+  }
+
+  protected _getDTCInfo(_level: string, _message: string): Error | undefined {
+    return undefined;
+  }
+
+  protected _decodeDTC(byte1: string, byte2: string): DTCObject | null {
+    try {
+      const b1 = parseInt(byte1, 16);
+      const b2 = parseInt(byte2, 16);
+      if (isNaN(b1) || isNaN(b2) || (b1 === 0 && b2 === 0)) {
+        return null;
+      }
+      const type = (b1 >> 6) & 0x03;
+      const digit2 = (b1 >> 4) & 0x03;
+      const digit3 = b1 & 0x0f;
+      const digits45 = b2;
+      
+      if (!this.isValidDTCComponents(type, digit2, digit3, digits45)) {
+        return null;
+      }
+      return { type, digit2, digit3, digits45 };
+    } catch (error) {
+      this._log('error', 'DTC decode error:', error);
+      return null;
+    }
   }
 }
