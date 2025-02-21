@@ -10,6 +10,15 @@
 
 </div>
 
+## ⭐ Support the Project
+
+If you find this library useful, please consider giving it a star on GitHub! Your star helps:
+
+- 📈 Increase visibility in the automotive development community
+- 🤝 Attract more contributors and improvements
+- 💪 Maintain active development and support
+- 🎯 Reach more developers who can benefit from it
+
 ## 🌟 Why Choose This Library?
 
 ### 🏆 Industry-Leading Reliability
@@ -37,11 +46,19 @@
 
 ## 🚀 Quick Start
 
+## ⭐ Support the Project
+
+If you find this library useful, please consider giving it a star on GitHub! Your star helps:
+
 ### Installation
 
 ```bash
 npm install obd-raw-data-parser
 ```
+
+## ⭐ Support the Project
+
+If you find this library useful, please consider giving it a star on GitHub! Your star helps:
 
 ### Basic Usage
 
@@ -228,6 +245,53 @@ Contributions are welcome! Here's how you can help:
 3. 💾 Commit changes: `git commit -am 'feat: add amazing feature'`
 4. 🚀 Push to branch: `git push origin feature/amazing`
 5. 🎉 Submit a pull request
+
+## 🎯 Getting Started for Contributors
+
+### Development Setup
+
+1. 🛠️ **Prerequisites**
+   ```bash
+   node >= 14.0.0
+   npm >= 6.0.0
+   ```
+
+2. 🔧 **Setup Project**
+   ```bash
+   git clone https://github.com/rakshitbharat/obd-raw-data-parser.git
+   cd obd-raw-data-parser
+   npm install
+   ```
+
+3. 🧪 **Run Tests**
+   ```bash
+   npm test
+   npm run test:coverage
+   ```
+
+### Key Areas for Contribution
+
+1. 📝 **Documentation**
+   - Add examples for specific vehicle models
+   - Improve API documentation
+   - Create troubleshooting guides
+
+2. 🚗 **Vehicle Support**
+   - Add support for new PIDs
+   - Validate against different vehicle protocols
+   - Share test data from various vehicles
+
+3. 💡 **Feature Requests**
+   - Enhanced error handling
+   - Support for manufacturer-specific PIDs
+   - Performance optimizations
+
+4. 🐛 **Bug Reports**
+   - Include raw OBD data in reports
+   - Specify vehicle make/model
+   - Describe expected vs actual behavior
+
+Together, we can make vehicle diagnostics more accessible to everyone! 🚀
 
 ## 💝 Special Thanks
 
