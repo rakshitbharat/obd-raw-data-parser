@@ -78,7 +78,7 @@ export const getPayLoad = (buffer: number[]): string => {
  * @param {number} width - Padding width
  * @returns {string} Formatted hex string
  */
-export const toHexString = (num: number, width: number = 2): string => {
+export const toHexString = (num: number, width = 2): string => {
   return num.toString(16).toUpperCase().padStart(width, '0');
 };
 
@@ -88,7 +88,7 @@ export const toHexString = (num: number, width: number = 2): string => {
  * @param {string} paddingChar - Character to use for padding
  * @returns {string} Padded string
  */
-export const createEmptyBuffer = (size: number, paddingChar: string = '0'): string => {
+export const createEmptyBuffer = (size: number, paddingChar = '0'): string => {
   return paddingChar.repeat(size);
 };
 
@@ -117,7 +117,7 @@ export const calculateChecksum = (data: number[]): number => {
  * @param {string} footer - Footer to append
  * @returns {string} Formatted message
  */
-export const formatMessage = (message: string, header: string = '', footer: string = ''): string => {
+export const formatMessage = (message: string, header = '', footer = ''): string => {
   return `${header}${message}${footer}`;
 };
 
@@ -136,7 +136,7 @@ export const parseHexInt = (hex: string): number => {
  * @param {number} width - Padding width
  * @returns {string} Formatted decimal string
  */
-export const toDecString = (num: number, width: number = 0): string => {
+export const toDecString = (num: number, width = 0): string => {
   return num.toString().padStart(width, '0');
 };
 
@@ -154,4 +154,55 @@ export const decodeValue = (value: number[] | number): string => {
     console.error('[ECUDecoder] Error decoding value:', error);
     return '';
   }
+};
+
+/**
+ * Convert hex string to decimal value
+ * @param {string} hex - Hex string to convert
+ * @returns {number} Decimal value
+ */
+export const convertPIDHexToValue = (hex: string): number => {
+  const value = parseInt(hex, 16);
+  return isNaN(value) ? 0 : value;
+};
+
+/**
+ * Convert voltage hex value to actual voltage
+ * @param {string} hex - Hex string to convert
+ * @returns {number} Voltage value
+ */
+export const convertVoltageHexToValue = (hex: string): number => {
+  const value = parseInt(hex, 16) / 1000;
+  return fixed(value);
+};
+
+/**
+ * Extract value from OBD response
+ * @param {string} command - OBD command
+ * @param {string} response - OBD response
+ * @returns {string} Extracted value
+ */
+export const getValueFromResponse = (command: string, response: string): string => {
+  if (!command || !response) return '';
+  // Response processing logic would go here
+  return response.replace(command, '').trim();
+};
+
+/**
+ * Get unsigned integer from hex string
+ * @param {string} hex - Hex string to parse
+ * @returns {number} Unsigned integer value
+ */
+export const getUnsignedInt = (hex: string): number => {
+  const value = parseInt(hex, 16);
+  return isNaN(value) ? 0 : value >>> 0;
+};
+
+/**
+ * Round number to 2 decimal places
+ * @param {number} num - Number to round
+ * @returns {number} Rounded number
+ */
+export const fixed = (num: number): number => {
+  return Math.round(num * 100) / 100;
 };
