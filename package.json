@@ -50,7 +50,7 @@
     "@semantic-release/git": "^10.0.0",
     "@types/jest": "^29.0.0",
     "@types/node": "^22.13.5",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.24.1",
     "eslint": "^8.0.0",
     "eslint-plugin-jest": "^27.2.3",
