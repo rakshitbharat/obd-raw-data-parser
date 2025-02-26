@@ -4,7 +4,6 @@
   <p>Turn cryptic OBD-II data into human-readable vehicle information</p>
 
 [![NPM Version](https://img.shields.io/npm/v/obd-raw-data-parser.svg)](https://www.npmjs.com/package/obd-raw-data-parser)
-[![Build Status](https://github.com/rakshitbharat/obd-raw-data-parser/workflows/CI/badge.svg)](https://github.com/rakshitbharat/obd-raw-data-parser/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://img.shields.io/npm/dm/obd-raw-data-parser.svg)](https://www.npmjs.com/package/obd-raw-data-parser)
 
