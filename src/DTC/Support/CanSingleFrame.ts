@@ -46,6 +46,7 @@ export class CanSingleFrame extends BaseDecoder {
 
       // Convert ASCII numbers to actual bytes
       let bytes = this._convertAsciiToBytes(frame);
+      this._log("debug", "Converted bytes:", bytes);
       
       if (bytes.length < 2) {
         return [];
@@ -68,6 +69,7 @@ export class CanSingleFrame extends BaseDecoder {
 
       // Remove the mode response byte
       const dtcBytes = bytes.slice(1);
+      this._log("debug", "DTC bytes:", dtcBytes);
 
       // Check if all remaining bytes are zero (empty DTCs)
       if (dtcBytes.every(b => b === 0)) {
@@ -91,6 +93,7 @@ export class CanSingleFrame extends BaseDecoder {
         if (dtc) {
           rawDtcs.add(dtc);
           const dtcString = this._dtcToString(dtc);
+          this._log("debug", "Decoded DTC:", dtcString);
           if (dtcString) {
             dtcs.add(dtcString);
             this.setDTC(dtcString);
@@ -141,12 +144,10 @@ export class CanSingleFrame extends BaseDecoder {
     try {
       const b1 = parseInt(byte1, 16);
       const b2 = parseInt(byte2, 16);
-
       if (isNaN(b1) || isNaN(b2)) {
         this._log("debug", "Invalid DTC bytes:", { byte1, byte2 });
         return null;
       }
-
       // Debug log the byte values
       this._log("debug", "DTC byte values:", { 
         byte1, byte2, 
@@ -154,7 +155,6 @@ export class CanSingleFrame extends BaseDecoder {
         b1: b1.toString(16),
         b2: b2.toString(16)
       });
-
       // First check for C-type DTC by looking at the first nibble
       if ((b1 >> 4) === 0x0C) {
         // This is a C-type DTC
@@ -168,13 +168,11 @@ export class CanSingleFrame extends BaseDecoder {
           digits45: b2  // Keep full second byte for last two digits (32)
         };
       }
-
       // For all other types, use standard decoding
       const type = (b1 >> 6) & 0x03;
       const digit2 = (b1 >> 4) & 0x03;
       const digit3 = b1 & 0x0f;
       const digits45 = b2;
-
       return { type, digit2, digit3, digits45 };
     } catch (error) {
       this._log("error", "DTC decode error:", error);
