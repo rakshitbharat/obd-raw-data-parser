@@ -124,12 +124,7 @@ interface LambdaResponse {
   [key: string]: number;  // Add index signature
 }
 
-function convertLambda(
-  byteA: string,
-  byteB: string,
-  byteC: string,
-  byteD: string,
-): LambdaResponse {
+function convertLambda(byteA: string, byteB: string, byteC: string, byteD: string): LambdaResponse {
   const reply: LambdaResponse = {
     ratio: formatNumber(((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) * 2) / 65535),
     voltage: formatNumber(((parseInt(byteC, 16) * 256 + parseInt(byteD, 16)) * 8) / 65535)
