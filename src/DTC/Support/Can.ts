@@ -18,6 +18,9 @@ export class CanDecoder extends BaseDecoder {
   protected rawDtcObjects: DTCObject[] = [];
   private modeResponse: number;
 
+  // Define a list of invalid DTC bytes as a class property
+  private static readonly invalidDTCBytes = [0x07, 0x0A, 0x47, 0x4A];
+
   constructor(modeResponse?: number) {
     super();
     this.modeResponse = modeResponse || 0x43;
@@ -252,8 +255,7 @@ export class CanDecoder extends BaseDecoder {
       }
 
       if (b1 === 0 && b2 === 0) return null;
-      if (b1 === 0x07 || b1 === 0x0A) return null; // Exclude invalid DTC codes
-      if (b1 === 0x47 || b1 === 0x4A) return null; // Exclude invalid DTC codes
+      if (CanDecoder.invalidDTCBytes.includes(b1)) return null; // Exclude invalid DTC codes
 
       const type = (b1 >> 6) & 0x03;
       const digit2 = (b1 >> 4) & 0x03;
