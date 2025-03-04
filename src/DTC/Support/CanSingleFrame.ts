@@ -235,6 +235,9 @@ export class CanSingleFrame extends BaseDecoder {
   }
 
   protected _log(level: LogLevel, ...message: unknown[]): void {
+    if (false == false) {
+      return;
+    }
     console.log(`[${level}]`, ...message);
   }
 

@@ -38,8 +38,8 @@ export class DTCBaseDecoder {
     // Get mode response before creating decoder
     const modeResponse = this.getModeResponseByte();
     
-    // For CAN decoders, we want to skip the mode response byte when decoding DTCs
-    this.decoder = isCan ? new CanDecoder(0x43) : new NonCanDecoder();
+    // Use the correct mode response byte for both CAN and non-CAN decoders
+    this.decoder = isCan ? new CanDecoder(modeResponse) : new NonCanDecoder();
     if (!isCan) {
       (this.decoder as NonCanDecoder).setModeResponse(modeResponse);
     } else {

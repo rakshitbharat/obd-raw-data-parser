@@ -166,22 +166,21 @@ export class CanDecoder extends BaseDecoder {
     isCANFrame: boolean
   ): void {
     this._log("debug", `Frame ${frameIndex}: Processing DTCs, bytes:`, bytes);
-
     if (!bytes || bytes.length < 1) return;
-
     if (this.leftoverByte !== null) {
       bytes.unshift(this.leftoverByte);
       this.leftoverByte = null;
     }
 
-    if (frameIndex === 0 && !isCANFrame) {
-      const modeResponse = this.getModeResponseByte();
-      if (bytes[0] === modeResponse.toString(16)) {
+    // Check mode response byte for both CAN and non-CAN frames in first frame
+    if (frameIndex === 0) {
+      const firstByte = parseInt(bytes[0], 16);
+      if (firstByte === this.getModeResponseByte()) {
         bytes = bytes.slice(1);
-
+        // For first frame, after mode response byte, next byte is count
         if (bytes.length > 0 && this.expectedDTCCount === 0) {
           const countByte = parseInt(bytes[0], 16);
-          this.expectedDTCCount = Math.floor(countByte / 2);
+          this.expectedDTCCount = Math.floor(countByte / 3); // Adjusted to divide by 3
           bytes = bytes.slice(1);
         }
       }
@@ -253,6 +252,8 @@ export class CanDecoder extends BaseDecoder {
       }
 
       if (b1 === 0 && b2 === 0) return null;
+      if (b1 === 0x07 || b1 === 0x0A) return null; // Exclude invalid DTC codes
+      if (b1 === 0x47 || b1 === 0x4A) return null; // Exclude invalid DTC codes
 
       const type = (b1 >> 6) & 0x03;
       const digit2 = (b1 >> 4) & 0x03;
@@ -370,6 +371,9 @@ export class CanDecoder extends BaseDecoder {
   }
 
   protected _log(level: LogLevel, ...message: unknown[]): void {
+    if (false == false) {
+      return;
+    }
     console.log(`[${level}]`, ...message);
   }
 
