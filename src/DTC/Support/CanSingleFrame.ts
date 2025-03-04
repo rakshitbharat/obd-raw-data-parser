@@ -17,7 +17,8 @@ export class CanSingleFrame extends BaseDecoder {
 
   constructor(modeResponse?: number) {
     super();
-    this.modeResponse = modeResponse || 0x43;  // Default to mode 03 response
+    // Remove default mode 03 assumption
+    this.modeResponse = modeResponse || 0x00;
   }
 
   public setModeResponse(response: number): void {
@@ -61,9 +62,10 @@ export class CanSingleFrame extends BaseDecoder {
         }
       }
 
-      // Check for mode response byte
-      if (bytes[0] !== this.getModeResponseByte()) {
-        this._log("debug", `Invalid mode response byte. Expected ${this.getModeResponseByte().toString(16)}, got ${bytes[0].toString(16)}`);
+      // Check for mode response byte - now using passed in mode response
+      const expectedResponse = this.getModeResponseByte();
+      if (bytes[0] !== expectedResponse) {
+        this._log("debug", `Invalid mode response byte. Expected ${expectedResponse.toString(16)}, got ${bytes[0].toString(16)}`);
         return [];
       }
 
@@ -148,26 +150,28 @@ export class CanSingleFrame extends BaseDecoder {
         this._log("debug", "Invalid DTC bytes:", { byte1, byte2 });
         return null;
       }
-      // Debug log the byte values
-      this._log("debug", "DTC byte values:", { 
-        byte1, byte2, 
-        firstNibble: (b1 >> 4).toString(16),
-        b1: b1.toString(16),
-        b2: b2.toString(16)
-      });
+
       // First check for C-type DTC by looking at the first nibble
       if ((b1 >> 4) === 0x0C) {
         // This is a C-type DTC
         // For C0321:
-        // byte1 is 0xC0 - indicates C-type code and 0 as second digit
-        // byte2 is 0x32 - contains "32" portion of the code
+        // byte1 = 0xC0 -> indicates C-type code and 0 as second digit
+        // byte2 = 0x32 -> keep as literal "32" from hex
+        const digit2 = b1 & 0x0F;  // Second digit from second nibble of byte1
+        
+        // For C-type DTCs, preserve the hex digits from byte2
+        const byte2Hex = byte2.padStart(2, '0');  // Ensure 2 digits
+        const digit3 = parseInt(byte2Hex[0], 16);  // First hex digit
+        const digits45 = parseInt(byte2Hex[1], 16);  // Second hex digit
+        
         return {
           type: 1,  // 1 = C-type
-          digit2: 0,  // Always 0 for standard C-type DTCs
-          digit3: (b2 >> 4),  // First nibble of the second byte (3)
-          digits45: b2  // Keep full second byte for last two digits (32)
+          digit2,
+          digit3,
+          digits45
         };
       }
+
       // For all other types, use standard decoding
       const type = (b1 >> 6) & 0x03;
       const digit2 = (b1 >> 4) & 0x03;

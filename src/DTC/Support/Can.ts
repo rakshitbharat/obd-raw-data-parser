@@ -16,10 +16,29 @@ export class CanDecoder extends BaseDecoder {
   protected expectedDTCCount = 0;
   protected currentDTCCount = 0;
   protected rawDtcObjects: DTCObject[] = [];
+  private modeResponse: number;
 
-  constructor() {
+  constructor(modeResponse?: number) {
     super();
-    this.singleFrameDecoder = new CanSingleFrame();
+    this.modeResponse = modeResponse || 0x43;
+    // Pass modeResponse to CanSingleFrame and bind methods
+    this.singleFrameDecoder = new CanSingleFrame(this.modeResponse);
+    this.bindMethodsToSingleFrameDecoder();
+  }
+
+  public setModeResponse(response: number): void {
+    this.modeResponse = response;
+    // Sync modeResponse with singleFrameDecoder
+    this.singleFrameDecoder.setModeResponse(response);
+  }
+
+  private bindMethodsToSingleFrameDecoder(): void {
+    // Bind necessary methods and properties from CanDecoder to CanSingleFrame
+    Object.defineProperties(this.singleFrameDecoder, {
+      _log: { value: this._log.bind(this) },
+      setDTC: { value: this.setDTC.bind(this) },
+      getModeResponseByte: { value: () => this.modeResponse }
+    });
   }
 
   public decodeDTCs(rawResponseBytes: number[][]): string[] {
@@ -29,6 +48,8 @@ export class CanDecoder extends BaseDecoder {
       this._log("debug", `Response type: ${isMultiFrame ? "multi-frame" : "single-frame"}`);
 
       if (!isMultiFrame) {
+        // Update singleFrameDecoder's state before processing
+        this.singleFrameDecoder.setModeResponse(this.modeResponse);
         return this.singleFrameDecoder.decodeDTCs(rawResponseBytes);
       }
 
@@ -357,7 +378,7 @@ export class CanDecoder extends BaseDecoder {
   }
 
   protected getModeResponseByte(): number {
-    return 0x43; // Standard mode 3 response for DTCs
+    return this.modeResponse;
   }
 
   private _determineFrameType(frame: number[]): "colon" | "no-colon" {

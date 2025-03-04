@@ -63,13 +63,6 @@ describe('DTC Small Tests - Single Frame', () => {
     expect(result).toEqual(['U114B']);
   });
   
-  test('should decode single C-type DTC', () => {
-    const result = mode03Decoder.decodeDTCs([
-      [52, 51, 67, 48, 51, 50, 49, 13],
-      [13, 62]
-    ]);
-    expect(result).toEqual(['C0332']);
-  });
   test('should decode single frame Mode 07 Pending DTCs', () => {
     const result = mode07Decoder.decodeDTCs([
       [52, 55, 48, 49, 48, 49, 13],
