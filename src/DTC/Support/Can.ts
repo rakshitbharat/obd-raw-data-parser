@@ -1,5 +1,6 @@
 import { LogLevel } from "../dtc";
 import { BaseDecoder } from "./BaseDecoder";
+import { CanSingleFrame } from "./CanSingleFrame";
 
 // Add DTCObject interface at the top
 interface DTCObject {
@@ -10,33 +11,38 @@ interface DTCObject {
 }
 
 export class CanDecoder extends BaseDecoder {
+  private singleFrameDecoder: CanSingleFrame;
   protected leftoverByte: string | null = null;
   protected expectedDTCCount = 0;
   protected currentDTCCount = 0;
   protected rawDtcObjects: DTCObject[] = [];
 
+  constructor() {
+    super();
+    this.singleFrameDecoder = new CanSingleFrame();
+  }
+
   public decodeDTCs(rawResponseBytes: number[][]): string[] {
     try {
       this.reset();
+      const isMultiFrame = this._isMultiFrameResponse(rawResponseBytes);
+      this._log("debug", `Response type: ${isMultiFrame ? "multi-frame" : "single-frame"}`);
+
+      if (!isMultiFrame) {
+        return this.singleFrameDecoder.decodeDTCs(rawResponseBytes);
+      }
+
       const dtcs = new Set<string>();
       const rawDtcs = new Set<DTCObject>();
 
       this._log("debug", "Processing raw response bytes:", rawResponseBytes);
 
-      for (
-        let frameIndex = 0;
-        frameIndex < rawResponseBytes.length;
-        frameIndex++
-      ) {
+      for (let frameIndex = 0; frameIndex < rawResponseBytes.length; frameIndex++) {
         const frame = rawResponseBytes[frameIndex];
         let isCANFrame = false;
 
         if (!Array.isArray(frame) || frame.length < 4) {
-          this._log(
-            "debug",
-            `Frame ${frameIndex}: Skipping invalid byte array:`,
-            frame
-          );
+          this._log("debug", `Frame ${frameIndex}: Skipping invalid byte array:`, frame);
           continue;
         }
 
@@ -398,6 +404,33 @@ export class CanDecoder extends BaseDecoder {
       oxygenSensor: (statusByte & 0x02) !== 0, // Oxygen sensor error
       catalyst: (statusByte & 0x01) !== 0, // Catalyst error
     };
+  }
+
+  private _isMultiFrameResponse(frames: number[][]): boolean {
+    if (!frames || frames.length < 2) return false;
+
+    // Check if first frame starts with "0:"
+    const firstFrame = frames[0];
+    if (firstFrame.length >= 2) {
+      const possibleZero = String.fromCharCode(firstFrame[0]);
+      const possibleColon = String.fromCharCode(firstFrame[1]);
+      if (possibleZero === '0' && possibleColon === ':') {
+        return true;
+      }
+    }
+
+    // Check if any frame starts with a number followed by ":"
+    for (const frame of frames) {
+      if (frame.length >= 2) {
+        const firstChar = String.fromCharCode(frame[0]);
+        const secondChar = String.fromCharCode(frame[1]);
+        if (/[0-9]/.test(firstChar) && secondChar === ':') {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   protected _decodeCAN_DTC(byte1: number, byte2: number): DTCObject | null {
