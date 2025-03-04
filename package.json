@@ -63,5 +63,6 @@
   },
   "dependencies": {
     "text-decoding": "^1.0.0"
-  }
+  },
+  "type": "module"
 }
