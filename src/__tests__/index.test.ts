@@ -29,20 +29,6 @@ describe("OBD Parser", () => {
       });
     });
 
-    // in future we will start this test
-    // it("should parse lambda sensor correctly", () => {
-    //   const response = parseOBDResponse("41 24 00 00 00 00");
-    //   expect(response).toMatchObject({
-    //     mode: "41",
-    //     pid: "24",
-    //     name: "lambda11",
-    //     unit: "(ratio)",
-    //     value: expect.any(Object),
-    //   });
-    //   expect((response.value as Record<string, number>).ratio).toBeDefined();
-    //   expect((response.value as Record<string, number>).voltage).toBeDefined();
-    // });
-
     it("should handle NO DATA response", () => {
       const response = parseOBDResponse("NO DATA");
       expect(response).toEqual({

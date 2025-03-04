@@ -25,24 +25,6 @@ describe("DTC Decoder", () => {
       expect(result).toEqual(["P0101", "P0113", "U114B"]);
     });
 
-    // failing to test
-    // test("should decode DTCs from non-CAN mode 07 response with data", () => {
-    //   const decoder = new DTCBaseDecoder({
-    //     ...baseConfig,
-    //     isCan: false,
-    //     serviceMode: "07",
-    //     troubleCodeType: "PENDING",
-    //   });
-
-    //   // From DTC_WITH_DATA_EXAMPLE.txt
-    //   const response = [
-    //     [52, 55, 48, 49, 48, 49, 48, 49, 49, 51, 68, 49, 52, 66, 13],
-    //     [13, 62],
-    //   ];
-    //   const result = decoder.decodeDTCs(response);
-    //   expect(result).toEqual(["P0101", "P0113", "U114B"]);
-    // });
-
     test("should handle NO DATA response in non-CAN format", () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
