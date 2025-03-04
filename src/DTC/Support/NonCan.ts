@@ -108,7 +108,13 @@ export class NonCanDecoder extends BaseDecoder {
     return 0;
   }
 
-  protected _getDTCInfo(_level: string, _message: string): Error | undefined {
+  public setModeResponse(modeResponse: number): void {
+    Object.defineProperty(this, 'getModeResponseByte', {
+      value: () => modeResponse
+    });
+  }
+
+  protected _getDTCInfo(_dtcLevel: string, _dtcMessage: string): Error | undefined {
     return undefined;
   }
 

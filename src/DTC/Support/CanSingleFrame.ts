@@ -13,9 +13,15 @@ export class CanSingleFrame extends BaseDecoder {
   protected expectedDTCCount = 0;
   protected currentDTCCount = 0;
   protected rawDtcObjects: DTCObject[] = [];
+  private modeResponse: number;
 
-  constructor() {
+  constructor(modeResponse?: number) {
     super();
+    this.modeResponse = modeResponse || 0x43;  // Default to mode 03 response
+  }
+
+  public setModeResponse(response: number): void {
+    this.modeResponse = response;
   }
 
   public decodeDTCs(rawResponseBytes: number[][]): string[] {
@@ -31,17 +37,66 @@ export class CanSingleFrame extends BaseDecoder {
       }
 
       const frame = rawResponseBytes[0];
-      let bytes: string[] = [];
 
-      this._log("debug", `Processing CAN frame`);
-      bytes = this._extractBytesFromCANFrame(frame);
-
-      if (!bytes || bytes.length === 0) {
-        this._log("debug", "No bytes extracted");
+      // Check for NO DATA response
+      if (this.isNoDataResponse(frame)) {
+        this._log("debug", "NO DATA response detected");
         return [];
       }
 
-      this._processDTCBytes(bytes, dtcs, rawDtcs, 0, true);
+      // Convert ASCII numbers to actual bytes
+      let bytes = this._convertAsciiToBytes(frame);
+      
+      if (bytes.length < 2) {
+        return [];
+      }
+
+      // Handle CAN format with 01 00 prefix
+      if (bytes[0] === 0x01 && bytes[1] === 0x00) {
+        // Remove the 01 00 prefix and any bytes up to the mode response
+        const modeIndex = bytes.findIndex(b => b === this.getModeResponseByte());
+        if (modeIndex !== -1) {
+          bytes = bytes.slice(modeIndex);
+        }
+      }
+
+      // Check for mode response byte
+      if (bytes[0] !== this.getModeResponseByte()) {
+        this._log("debug", `Invalid mode response byte. Expected ${this.getModeResponseByte().toString(16)}, got ${bytes[0].toString(16)}`);
+        return [];
+      }
+
+      // Remove the mode response byte
+      const dtcBytes = bytes.slice(1);
+
+      // Check if all remaining bytes are zero (empty DTCs)
+      if (dtcBytes.every(b => b === 0)) {
+        return [];
+      }
+
+      // Process DTC bytes in pairs
+      for (let i = 0; i < dtcBytes.length - 1; i += 2) {
+        const byte1 = dtcBytes[i];
+        const byte2 = dtcBytes[i + 1];
+
+        // Skip if both bytes are zero
+        if (byte1 === 0 && byte2 === 0) {
+          continue;
+        }
+
+        const dtc = this._decodeDTC(
+          byte1.toString(16).padStart(2, '0'),
+          byte2.toString(16).padStart(2, '0')
+        );
+        if (dtc) {
+          rawDtcs.add(dtc);
+          const dtcString = this._dtcToString(dtc);
+          if (dtcString) {
+            dtcs.add(dtcString);
+            this.setDTC(dtcString);
+          }
+        }
+      }
 
       this.rawDtcObjects = Array.from(rawDtcs);
       const dtcArray = Array.from(dtcs);
@@ -53,100 +108,26 @@ export class CanSingleFrame extends BaseDecoder {
     }
   }
 
-  private _extractBytesFromCANFrame(frame: number[]): string[] {
-    const dataBytes = frame.slice(2);
-    return this._extractBytesFromData(dataBytes);
-  }
-
-  private _extractBytesFromData(dataArray: number[]): string[] {
-    const bytes: string[] = [];
-    let currentNibble = -1;
-    let hexPair = "";
-
-    for (const byte of dataArray) {
-      if (byte === 13) break; // CR (carriage return)
-
-      const nibble = this._getNibbleValue(byte);
+  private _convertAsciiToBytes(asciiBytes: number[]): number[] {
+    const bytes: number[] = [];
+    let currentByte = -1;
+    
+    for (const ascii of asciiBytes) {
+      if (ascii === 13) continue; // Skip CR
+      
+      const nibble = this._getNibbleValue(ascii);
       if (nibble === -1) continue;
-
-      if (currentNibble === -1) {
-        currentNibble = nibble;
-        hexPair = nibble.toString(16).toLowerCase();
+      
+      if (currentByte === -1) {
+        currentByte = nibble << 4;
       } else {
-        hexPair += nibble.toString(16).toLowerCase();
-        bytes.push(hexPair);
-        currentNibble = -1;
-        hexPair = "";
+        currentByte |= nibble;
+        bytes.push(currentByte);
+        currentByte = -1;
       }
     }
-
-    if (currentNibble !== -1) {
-      this.leftoverByte = currentNibble.toString(16).toLowerCase();
-    }
-
-    this._log("debug", "Extracted bytes:", bytes);
+    
     return bytes;
-  }
-
-  protected _processDTCBytes(
-    bytes: string[],
-    dtcs: Set<string>,
-    rawDtcs: Set<DTCObject>,
-    frameIndex: number,
-    isCANFrame: boolean
-  ): void {
-    this._log("debug", `Frame ${frameIndex}: Processing DTCs, bytes:`, bytes);
-
-    if (!bytes || bytes.length < 1) return;
-
-    if (this.leftoverByte !== null) {
-      bytes.unshift(this.leftoverByte);
-      this.leftoverByte = null;
-    }
-
-    let i;
-    for (i = 0; i < bytes.length; i += 2) {
-      if (i + 1 >= bytes.length) {
-        if (isCANFrame) {
-          this._log("warn", "CAN frame has odd number of DTC bytes");
-        }
-        this.leftoverByte = bytes[i];
-        break;
-      }
-
-      const byte1 = bytes[i];
-      const byte2 = bytes[i + 1];
-
-      if (!byte1 || !byte2 || (byte1 === "00" && byte2 === "00")) {
-        continue;
-      }
-
-      const byte1Value = parseInt(byte1, 16);
-      const byte2Value = parseInt(byte2, 16);
-
-      if (isNaN(byte1Value) || isNaN(byte2Value)) {
-        this._log("debug", "Failed to parse bytes:", { byte1, byte2 });
-        continue;
-      }
-
-      const dtc = this._decodeDTC(
-        byte1Value.toString(16),
-        byte2Value.toString(16)
-      );
-      if (dtc) {
-        rawDtcs.add(dtc);
-        const dtcString = this._dtcToString(dtc);
-        if (dtcString && !dtcs.has(dtcString)) {
-          dtcs.add(dtcString);
-          this.setDTC(dtcString);
-          this._log("debug", `Discovered DTC: ${dtcString}`);
-        }
-      }
-    }
-
-    if (i >= bytes.length) {
-      this.leftoverByte = null;
-    }
   }
 
   protected _getNibbleValue(byte: number): number {
@@ -166,16 +147,33 @@ export class CanSingleFrame extends BaseDecoder {
         return null;
       }
 
-      if (b1 === 0 && b2 === 0) return null;
+      // Debug log the byte values
+      this._log("debug", "DTC byte values:", { 
+        byte1, byte2, 
+        firstNibble: (b1 >> 4).toString(16),
+        b1: b1.toString(16),
+        b2: b2.toString(16)
+      });
 
+      // First check for C-type DTC by looking at the first nibble
+      if ((b1 >> 4) === 0x0C) {
+        // This is a C-type DTC
+        // For C0321:
+        // byte1 is 0xC0 - indicates C-type code and 0 as second digit
+        // byte2 is 0x32 - contains "32" portion of the code
+        return {
+          type: 1,  // 1 = C-type
+          digit2: 0,  // Always 0 for standard C-type DTCs
+          digit3: (b2 >> 4),  // First nibble of the second byte (3)
+          digits45: b2  // Keep full second byte for last two digits (32)
+        };
+      }
+
+      // For all other types, use standard decoding
       const type = (b1 >> 6) & 0x03;
       const digit2 = (b1 >> 4) & 0x03;
       const digit3 = b1 & 0x0f;
       const digits45 = b2;
-
-      if (!this._isValidDTCComponents(type, digit2, digit3, digits45)) {
-        return null;
-      }
 
       return { type, digit2, digit3, digits45 };
     } catch (error) {
@@ -246,10 +244,19 @@ export class CanSingleFrame extends BaseDecoder {
   }
 
   protected getModeResponseByte(): number {
-    return 0x43; // Standard mode 3 response for DTCs
+    return this.modeResponse;
   }
 
   protected setDTC(dtc: string): void {
     this._log("debug", `Setting DTC: ${dtc}`);
+  }
+
+  protected isNoDataResponse(frame: number[]): boolean {
+    if (frame.length >= 7) {
+      // Check for "NO DATA" ASCII sequence
+      const noDataString = String.fromCharCode(...frame.slice(0, 7));
+      return noDataString === "NO DATA";
+    }
+    return false;
   }
 }
