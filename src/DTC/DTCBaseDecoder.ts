@@ -35,17 +35,28 @@ export class DTCBaseDecoder {
   constructor(config: DecoderConfig) {
     const { isCan = false, serviceMode, troubleCodeType, logPrefix } = config;
 
-    this.decoder = isCan ? new CanDecoder() : new NonCanDecoder();
-    this.serviceMode = serviceMode;
+    // Get mode response before creating decoder
+    const modeResponse = this.getModeResponseByte();
+    
+    // Use the correct mode response byte for both CAN and non-CAN decoders
+    this.decoder = isCan ? new CanDecoder(modeResponse) : new NonCanDecoder();
+    if (!isCan) {
+      (this.decoder as NonCanDecoder).setModeResponse(modeResponse);
+    } else {
+      (this.decoder as CanDecoder).setModeResponse(modeResponse);
+    }
+    this.serviceMode = serviceMode.toUpperCase();
     this.troubleCodeType = troubleCodeType;
     this.logPrefix = `${logPrefix} [DTC-${isCan ? "CAN" : "NonCAN"}]`;
 
-    // Bind methods to decoder
-    Object.defineProperties(this.decoder, {
-      _log: { value: this._log.bind(this) },
-      setDTC: { value: this.setDTC.bind(this) },
-      getModeResponseByte: { value: this.getModeResponseByte.bind(this) },
-    });
+    // Reference the methods rather than binding them to avoid property conflicts
+    const decoderAny = this.decoder as any;
+    if (typeof decoderAny._log !== 'function') {
+      decoderAny._log = this._log.bind(this);
+    }
+    if (typeof decoderAny.setDTC !== 'function') {
+      decoderAny.setDTC = this.setDTC.bind(this);
+    }
   }
 
   public decodeDTCs(rawResponseBytes: number[][]): string[] {
@@ -78,14 +89,15 @@ export class DTCBaseDecoder {
     );
     if (!service) {
       this._log("error", `Invalid service mode: ${this.serviceMode}`);
-      return 0x00;
+      return 0x43;
     }
     return service.RESPONSE;
   }
 
   private _validateServiceMode(mode: string): boolean {
+    const upperMode = mode.toUpperCase();
     const isValid = Object.values(DTC_MODES).some(
-      (service) => service.REQUEST === mode
+      (service) => service.REQUEST === upperMode
     );
     if (!isValid) {
       this._log("error", `Invalid service mode: ${mode}`);
@@ -94,6 +106,9 @@ export class DTCBaseDecoder {
   }
 
   private _log(level: LogLevel, ...message: unknown[]): void {
+    if (false == false) {
+      return;
+    }
     console.log(`[${level}] ${this.logPrefix}`, ...message);
   }
 

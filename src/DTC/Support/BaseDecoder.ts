@@ -26,6 +26,15 @@ export abstract class BaseDecoder {
     return this.rawDtcObjects;
   }
 
+  protected isNoDataResponse(frame: number[]): boolean {
+    if (frame.length >= 7) {
+      // Check for "NO DATA" ASCII sequence
+      const noDataSequence = [78, 79, 32, 68, 65, 84, 65]; // "NO DATA"
+      return noDataSequence.every((byte, index) => frame[index] === byte);
+    }
+    return false;
+  }
+
   public abstract decodeDTCs(rawResponseBytes: number[][]): string[];
   protected abstract _log(level: LogLevel, ...message: unknown[]): void;
   protected abstract setDTC(dtc: string): void;

@@ -18,26 +18,25 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: '18.x'
-          registry-url: 'https://registry.npmjs.org'
+          bun-version: latest
 
       - name: Configure NPM
         run: |
-          npm config set //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
-          npm config list
+          bun config set //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
+          bun config list
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Verify NPM Authentication
-        run: npm whoami
+        run: bun whoami
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -45,15 +44,15 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          npm version ${{ github.event.inputs.version }} --no-git-tag-version
+          bun version ${{ github.event.inputs.version }} --no-git-tag-version
           git add package.json
           git commit -m "chore: bump version to ${{ github.event.inputs.version }}"
           git push
 
       - name: Build
-        run: npm run build
+        run: bun run build
 
       - name: Publish to NPM
-        run: npm publish --access public
+        run: bun publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

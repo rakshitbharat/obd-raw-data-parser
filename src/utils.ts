@@ -47,8 +47,8 @@ export const byteArrayToString = (bytes: ByteInput): string => {
     if (bytes.length === 0) return '';
 
     // Handle nested arrays of any depth
-    const flatten = (arr: any[]): number[] => {
-      return arr.reduce((flat: number[], item: any) => {
+    const flatten = (arr: (number | number[])[]): number[] => {
+      return arr.reduce((flat: number[], item: number | number[]) => {
         return flat.concat(Array.isArray(item) ? flatten(item) : item);
       }, []);
     };

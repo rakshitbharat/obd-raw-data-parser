@@ -11,15 +11,15 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "bun run tsc",
     "prepare": "husky install && chmod +x .husky/pre-commit && chmod +x .husky/commit-msg",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "semantic-release": "semantic-release",
-    "example": "ts-node examples/basic-usage.ts",
-    "ci": "npm run lint && npm test && npm run build"
+    "test": "bun run jest",
+    "test:watch": "bun run jest --watch",
+    "lint": "bun run eslint . --ext .ts",
+    "lint:fix": "bun run eslint . --ext .ts --fix",
+    "semantic-release": "bun run semantic-release",
+    "example": "bun run ts-node examples/basic-usage.ts",
+    "ci": "bun run lint && bun run test && bun run build"
   },
   "keywords": [
     "obd",

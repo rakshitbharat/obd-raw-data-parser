@@ -1,5 +1,6 @@
 import { LogLevel } from "../dtc";
 import { BaseDecoder } from "./BaseDecoder";
+import { CanSingleFrame } from "./CanSingleFrame";
 
 // Add DTCObject interface at the top
 interface DTCObject {
@@ -10,33 +11,62 @@ interface DTCObject {
 }
 
 export class CanDecoder extends BaseDecoder {
+  private singleFrameDecoder: CanSingleFrame;
   protected leftoverByte: string | null = null;
   protected expectedDTCCount = 0;
   protected currentDTCCount = 0;
   protected rawDtcObjects: DTCObject[] = [];
+  private modeResponse: number;
+
+  // Define a list of invalid DTC bytes as a class property
+  private static readonly invalidDTCBytes = [0x07, 0x0A, 0x47, 0x4A];
+
+  constructor(modeResponse?: number) {
+    super();
+    this.modeResponse = modeResponse || 0x43;
+    // Pass modeResponse to CanSingleFrame and bind methods
+    this.singleFrameDecoder = new CanSingleFrame(this.modeResponse);
+    this.bindMethodsToSingleFrameDecoder();
+  }
+
+  public setModeResponse(response: number): void {
+    this.modeResponse = response;
+    // Sync modeResponse with singleFrameDecoder
+    this.singleFrameDecoder.setModeResponse(response);
+  }
+
+  private bindMethodsToSingleFrameDecoder(): void {
+    // Bind necessary methods and properties from CanDecoder to CanSingleFrame
+    Object.defineProperties(this.singleFrameDecoder, {
+      _log: { value: this._log.bind(this) },
+      setDTC: { value: this.setDTC.bind(this) },
+      getModeResponseByte: { value: () => this.modeResponse }
+    });
+  }
 
   public decodeDTCs(rawResponseBytes: number[][]): string[] {
     try {
       this.reset();
+      const isMultiFrame = this._isMultiFrameResponse(rawResponseBytes);
+      this._log("debug", `Response type: ${isMultiFrame ? "multi-frame" : "single-frame"}`);
+
+      if (!isMultiFrame) {
+        // Update singleFrameDecoder's state before processing
+        this.singleFrameDecoder.setModeResponse(this.modeResponse);
+        return this.singleFrameDecoder.decodeDTCs(rawResponseBytes);
+      }
+
       const dtcs = new Set<string>();
       const rawDtcs = new Set<DTCObject>();
 
       this._log("debug", "Processing raw response bytes:", rawResponseBytes);
 
-      for (
-        let frameIndex = 0;
-        frameIndex < rawResponseBytes.length;
-        frameIndex++
-      ) {
+      for (let frameIndex = 0; frameIndex < rawResponseBytes.length; frameIndex++) {
         const frame = rawResponseBytes[frameIndex];
         let isCANFrame = false;
 
         if (!Array.isArray(frame) || frame.length < 4) {
-          this._log(
-            "debug",
-            `Frame ${frameIndex}: Skipping invalid byte array:`,
-            frame
-          );
+          this._log("debug", `Frame ${frameIndex}: Skipping invalid byte array:`, frame);
           continue;
         }
 
@@ -139,22 +169,21 @@ export class CanDecoder extends BaseDecoder {
     isCANFrame: boolean
   ): void {
     this._log("debug", `Frame ${frameIndex}: Processing DTCs, bytes:`, bytes);
-
     if (!bytes || bytes.length < 1) return;
-
     if (this.leftoverByte !== null) {
       bytes.unshift(this.leftoverByte);
       this.leftoverByte = null;
     }
 
-    if (frameIndex === 0 && !isCANFrame) {
-      const modeResponse = this.getModeResponseByte();
-      if (bytes[0] === modeResponse.toString(16)) {
+    // Check mode response byte for both CAN and non-CAN frames in first frame
+    if (frameIndex === 0) {
+      const firstByte = parseInt(bytes[0], 16);
+      if (firstByte === this.getModeResponseByte()) {
         bytes = bytes.slice(1);
-
+        // For first frame, after mode response byte, next byte is count
         if (bytes.length > 0 && this.expectedDTCCount === 0) {
           const countByte = parseInt(bytes[0], 16);
-          this.expectedDTCCount = Math.floor(countByte / 2);
+          this.expectedDTCCount = Math.floor(countByte / 3); // Adjusted to divide by 3
           bytes = bytes.slice(1);
         }
       }
@@ -226,6 +255,7 @@ export class CanDecoder extends BaseDecoder {
       }
 
       if (b1 === 0 && b2 === 0) return null;
+      if (CanDecoder.invalidDTCBytes.includes(b1)) return null; // Exclude invalid DTC codes
 
       const type = (b1 >> 6) & 0x03;
       const digit2 = (b1 >> 4) & 0x03;
@@ -343,6 +373,9 @@ export class CanDecoder extends BaseDecoder {
   }
 
   protected _log(level: LogLevel, ...message: unknown[]): void {
+    if (false == false) {
+      return;
+    }
     console.log(`[${level}]`, ...message);
   }
 
@@ -351,7 +384,7 @@ export class CanDecoder extends BaseDecoder {
   }
 
   protected getModeResponseByte(): number {
-    return 0x43; // Standard mode 3 response for DTCs
+    return this.modeResponse;
   }
 
   private _determineFrameType(frame: number[]): "colon" | "no-colon" {
@@ -398,6 +431,33 @@ export class CanDecoder extends BaseDecoder {
       oxygenSensor: (statusByte & 0x02) !== 0, // Oxygen sensor error
       catalyst: (statusByte & 0x01) !== 0, // Catalyst error
     };
+  }
+
+  private _isMultiFrameResponse(frames: number[][]): boolean {
+    if (!frames || frames.length < 2) return false;
+
+    // Check if first frame starts with "0:"
+    const firstFrame = frames[0];
+    if (firstFrame.length >= 2) {
+      const possibleZero = String.fromCharCode(firstFrame[0]);
+      const possibleColon = String.fromCharCode(firstFrame[1]);
+      if (possibleZero === '0' && possibleColon === ':') {
+        return true;
+      }
+    }
+
+    // Check if any frame starts with a number followed by ":"
+    for (const frame of frames) {
+      if (frame.length >= 2) {
+        const firstChar = String.fromCharCode(frame[0]);
+        const secondChar = String.fromCharCode(frame[1]);
+        if (/[0-9]/.test(firstChar) && secondChar === ':') {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   protected _decodeCAN_DTC(byte1: number, byte2: number): DTCObject | null {

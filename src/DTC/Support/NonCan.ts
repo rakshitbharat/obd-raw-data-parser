@@ -95,10 +95,12 @@ export class NonCanDecoder extends BaseDecoder {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected _log(_level: LogLevel, ..._message: unknown[]): void {
     // Implementation provided by parent
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected setDTC(_dtc: string): void {
     // Implementation provided by parent
   }
@@ -108,7 +110,14 @@ export class NonCanDecoder extends BaseDecoder {
     return 0;
   }
 
-  protected _getDTCInfo(_level: string, _message: string): Error | undefined {
+  public setModeResponse(modeResponse: number): void {
+    Object.defineProperty(this, 'getModeResponseByte', {
+      value: () => modeResponse
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected _getDTCInfo(_dtcLevel: string, _dtcMessage: string): Error | undefined {
     return undefined;
   }
 
