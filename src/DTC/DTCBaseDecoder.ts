@@ -1,7 +1,6 @@
 import { CanDecoder } from "./Support/Can";
 import { NonCanDecoder } from "./Support/NonCan";
 import { DecoderConfig, DTCMode, DTCStatus, DTCObject, LogLevel } from "./dtc";
-import { CanSingleFrame } from "./Support/CanSingleFrame";
 
 const DTC_MODES: Record<string, DTCMode> = {
   MODE03: {
@@ -28,7 +27,7 @@ const DTC_MODES: Record<string, DTCMode> = {
 } as const;
 
 export class DTCBaseDecoder {
-  private readonly decoder: CanDecoder | NonCanDecoder | CanSingleFrame;
+  private readonly decoder: CanDecoder | NonCanDecoder;
   private readonly serviceMode: string;
   private readonly troubleCodeType: string;
   private readonly logPrefix: string;
@@ -36,19 +35,7 @@ export class DTCBaseDecoder {
   constructor(config: DecoderConfig) {
     const { isCan = false, serviceMode, troubleCodeType, logPrefix } = config;
 
-    // Convert service mode to mode response byte
-    const modeResponse = this.getModeResponseFromServiceMode(serviceMode);
-    
-    // Create appropriate decoder with mode response
-    if (isCan) {
-      this.decoder = new CanSingleFrame(modeResponse);
-    } else {
-      this.decoder = new NonCanDecoder();
-      if ('setModeResponse' in this.decoder) {
-        this.decoder.setModeResponse(modeResponse);
-      }
-    }
-
+    this.decoder = isCan ? new CanDecoder() : new NonCanDecoder();
     this.serviceMode = serviceMode;
     this.troubleCodeType = troubleCodeType;
     this.logPrefix = `${logPrefix} [DTC-${isCan ? "CAN" : "NonCAN"}]`;
@@ -56,7 +43,8 @@ export class DTCBaseDecoder {
     // Bind methods to decoder
     Object.defineProperties(this.decoder, {
       _log: { value: this._log.bind(this) },
-      setDTC: { value: this.setDTC.bind(this) }
+      setDTC: { value: this.setDTC.bind(this) },
+      getModeResponseByte: { value: this.getModeResponseByte.bind(this) },
     });
   }
 
@@ -75,39 +63,41 @@ export class DTCBaseDecoder {
     return {
       milActive: (statusByte & 0x80) !== 0,
       dtcCount: statusByte & 0x7f,
-      currentError: (statusByte & 0x01) !== 0,
-      pendingError: (statusByte & 0x02) !== 0,
-      confirmedError: (statusByte & 0x04) !== 0,
-      egrSystem: (statusByte & 0x08) !== 0,
-      oxygenSensor: (statusByte & 0x10) !== 0,
-      catalyst: (statusByte & 0x20) !== 0,
+      currentError: (statusByte & 0x20) !== 0,
+      pendingError: (statusByte & 0x10) !== 0,
+      confirmedError: (statusByte & 0x08) !== 0,
+      egrSystem: (statusByte & 0x04) !== 0,
+      oxygenSensor: (statusByte & 0x02) !== 0,
+      catalyst: (statusByte & 0x01) !== 0,
     };
   }
 
-  private getModeResponseFromServiceMode(serviceMode: string): number {
-    // Convert service mode to uppercase hex format without leading 0x
-    const modeKey = `MODE${serviceMode.toUpperCase()}`;
-    const mode = DTC_MODES[modeKey];
-    if (!mode) {
-      throw new Error(`Invalid service mode: ${serviceMode}`);
+  private getModeResponseByte(): number {
+    const service = Object.values(DTC_MODES).find(
+      (s) => s.REQUEST === this.serviceMode
+    );
+    if (!service) {
+      this._log("error", `Invalid service mode: ${this.serviceMode}`);
+      return 0x00;
     }
-    return mode.RESPONSE;
+    return service.RESPONSE;
   }
 
   private _validateServiceMode(mode: string): boolean {
-    const validModes = ["03", "07", "0A"];
-    if (!validModes.includes(mode)) {
+    const isValid = Object.values(DTC_MODES).some(
+      (service) => service.REQUEST === mode
+    );
+    if (!isValid) {
       this._log("error", `Invalid service mode: ${mode}`);
-      return false;
     }
-    return true;
+    return isValid;
   }
 
   private _log(level: LogLevel, ...message: unknown[]): void {
-    if(false == false) {
+    if (false == false) {
       return;
     }
-    console.log(`[${this.logPrefix}] [${level}]`, ...message);
+    console.log(`[${level}] ${this.logPrefix}`, ...message);
   }
 
   private setDTC(dtc: string): void {
