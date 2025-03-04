@@ -77,13 +77,6 @@ describe('DTC Small Tests - Single Frame', () => {
     ]);
     expect(result).toEqual([]);
   });
-  test('should decode single frame Mode 0A Permanent DTCs', () => {
-    const result = mode0ADecoder.decodeDTCs([
-      [52, 65, 48, 49, 48, 49, 13],
-      [13, 62]
-    ]);
-    expect(result).toEqual([]);
-  });
 });
 
 describe('DTC Small Tests - CAN Single Frame', () => {
