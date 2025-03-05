@@ -1,5 +1,9 @@
+/* eslint-disable */
+
+// @ts-ignore
+// eslint-disable-next-line
+import obdResponses from "../data/obd_responses.json" with { type: "json" };
 import { DTCBaseDecoder } from "../index.js";
-import obdResponses from "../data/obd_responses.json" assert { type: "json" };
 
 // Create decoders for different modes
 const mode03Decoder = new DTCBaseDecoder({
