@@ -1,8 +1,8 @@
 // disable eslint for this file
 /* eslint-disable */
 import {
-  DTCBaseDecoder,
-} from "../index";
+  DTCBaseDecoder
+} from "../index.js";
 
 describe("DTC Decoder", () => {
   describe("DTCBaseDecoder", () => {

@@ -1,6 +1,6 @@
 import {
   DTCBaseDecoder,
-} from "../index";
+} from "../index.js";
 
 describe("DTC Decoder", () => {
   describe("DTCBaseDecoder", () => {
