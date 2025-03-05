@@ -19,7 +19,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "prepare": "husky install",
+    "prepare": "husky",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint .",
