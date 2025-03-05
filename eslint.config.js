@@ -4,15 +4,10 @@ import jestPlugin from 'eslint-plugin-jest';
 
 export default [
   {
-    ignores: [
-      'dist',
-      'dist/**/*',
-      'coverage/**',
-      'node_modules/**'
-    ]
+    ignores: ['dist/**', 'coverage/**', 'node_modules/**']
   },
   {
-    files: ['src/**/*.ts'],
+    files: ['**/*.ts'],
     languageOptions: {
       parser: tsParser,
       ecmaVersion: 2020,
@@ -34,7 +29,12 @@ export default [
       '@typescript-eslint/no-unused-vars': ['error', { 
         'argsIgnorePattern': '^_',
         'varsIgnorePattern': '^_'
-      }]
+      }],
+      'jest/no-disabled-tests': 'warn',
+      'jest/no-focused-tests': 'error',
+      'jest/no-identical-title': 'error',
+      'jest/prefer-to-have-length': 'warn',
+      'jest/valid-expect': 'error'
     }
   }
 ];

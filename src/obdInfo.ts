@@ -1,6 +1,5 @@
 /* eslint-disable no-bitwise */
 
-
 // Add helper function to format numbers
 function formatNumber(value: number): number {
   return Number(value.toFixed(2));
