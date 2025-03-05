@@ -1,5 +1,5 @@
-import { DTCBaseDecoder } from "../index";
-import * as obdResponses from "../data/obd_responses.json";
+import { DTCBaseDecoder } from "../index.js";
+import obdResponses from "../data/obd_responses.json" assert { type: "json" };
 
 // Create decoders for different modes
 const mode03Decoder = new DTCBaseDecoder({
@@ -104,7 +104,7 @@ function demonstrateDTCParsing() {
 
   // Parse Mode 03 responses
   console.log("Mode 03 Responses:");
-  obdResponses["03"].forEach((response, index) => {
+  (obdResponses as any)["03"].forEach((response: number[][], index: number) => {
     console.log(`Response ${index + 1}:`);
     console.log(mode03Decoder.decodeDTCs(response));
     console.log();
@@ -112,7 +112,7 @@ function demonstrateDTCParsing() {
 
   // Parse Mode 07 responses
   console.log("Mode 07 Responses:");
-  obdResponses["07"].forEach((response, index) => {
+  (obdResponses as any)["07"].forEach((response: number[][], index: number) => {
     console.log(`Response ${index + 1}:`);
     console.log(mode07Decoder.decodeDTCs(response));
     console.log();
@@ -120,7 +120,7 @@ function demonstrateDTCParsing() {
 
   // Parse Mode 0A responses
   console.log("Mode 0A Responses:");
-  obdResponses["0A"].forEach((response, index) => {
+  (obdResponses as any)["0A"].forEach((response: number[][], index: number) => {
     console.log(`Response ${index + 1}:`);
     console.log(mode0ADecoder.decodeDTCs(response));
     console.log();

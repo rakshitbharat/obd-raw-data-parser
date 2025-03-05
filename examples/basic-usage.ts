@@ -1,4 +1,4 @@
-import { parseOBDResponse, getPIDInfo, getAllPIDs } from '../src/index';
+import { parseOBDResponse, getPIDInfo, getAllPIDs } from '../src/index.js';
 
 // Example 1: Parse vehicle speed
 const speedResponse = parseOBDResponse('41 0D 32');

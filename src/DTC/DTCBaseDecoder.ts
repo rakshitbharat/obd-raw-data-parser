@@ -1,6 +1,6 @@
-import { CanDecoder } from "./Support/Can";
-import { NonCanDecoder } from "./Support/NonCan";
-import { DecoderConfig, DTCMode, DTCStatus, DTCObject, LogLevel } from "./dtc";
+import { CanDecoder } from "./Support/Can.js";
+import { NonCanDecoder } from "./Support/NonCan.js";
+import { DecoderConfig, DTCMode, DTCStatus, DTCObject, LogLevel } from "./dtc.js";
 
 const DTC_MODES: Record<string, DTCMode> = {
   MODE03: {

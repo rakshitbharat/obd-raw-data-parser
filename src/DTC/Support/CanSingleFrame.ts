@@ -1,5 +1,5 @@
-import { LogLevel } from "../dtc";
-import { BaseDecoder } from "./BaseDecoder";
+import { LogLevel } from "../dtc.js";
+import { BaseDecoder } from "./BaseDecoder.js";
 
 interface DTCObject {
   type: number;

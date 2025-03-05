@@ -1,5 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-bun run lint
+#!/usr/bin/env bash
+npx eslint .
 bun test

@@ -1,4 +1,4 @@
-import { DTCObject, LogLevel, DTCModes } from '../dtc';
+import { DTCObject, LogLevel, DTCModes } from '../dtc.js';
 
 export abstract class BaseDecoder {
   protected rawDtcObjects: DTCObject[] = [];

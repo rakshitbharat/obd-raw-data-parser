@@ -1,6 +1,6 @@
 import {
-    DTCBaseDecoder,
-  } from "../index";
+  DTCBaseDecoder
+  } from "../index.js";
 
   const baseConfig = {
     logPrefix: "TEST",

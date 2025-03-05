@@ -1,5 +1,5 @@
-import { LogLevel, DTCObject } from '../dtc';
-import { BaseDecoder } from './BaseDecoder';
+import { LogLevel, DTCObject } from '../dtc.js';
+import { BaseDecoder } from './BaseDecoder.js';
 
 export class NonCanDecoder extends BaseDecoder {
   protected _determineFrameType(frame: number[]): 'colon' | 'no-colon' {

@@ -1,6 +1,6 @@
-import { LogLevel } from "../dtc";
-import { BaseDecoder } from "./BaseDecoder";
-import { CanSingleFrame } from "./CanSingleFrame";
+import { LogLevel } from "../dtc.js";
+import { BaseDecoder } from "./BaseDecoder.js";
+import { CanSingleFrame } from "./CanSingleFrame.js";
 
 // Add DTCObject interface at the top
 interface DTCObject {
