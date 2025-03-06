@@ -7,7 +7,7 @@ describe("DTC Decoder", () => {
     const baseConfig = {
       logPrefix: "TEST",
     };
-    test("should decode DTCs from non-CAN mode 03 response with data", () => {
+    test("empty raw data should have empty response", () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: true,
