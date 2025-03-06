@@ -1,6 +1,6 @@
 {
   "name": "obd-raw-data-parser",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "A lightweight TypeScript library for parsing OBD-II raw data into human readable format. Based on the excellent work of obd-utils by Nishkalkashyap.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
