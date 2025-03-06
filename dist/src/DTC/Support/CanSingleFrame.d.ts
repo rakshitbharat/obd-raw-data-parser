@@ -25,5 +25,6 @@ export declare class CanSingleFrame extends BaseDecoder {
     protected getModeResponseByte(): number;
     protected setDTC(dtc: string): void;
     protected isNoDataResponse(frame: number[]): boolean;
+    protected isAllAFrameResponse(frameString: string): boolean;
 }
 export {};

@@ -27,8 +27,31 @@ export class CanSingleFrame extends BaseDecoder {
                 this._log("debug", "NO DATA response detected");
                 return [];
             }
-            // Convert ASCII numbers to actual bytes
-            let bytes = this._convertAsciiToBytes(frame);
+            // Parse CAN frame format "010\r0:43071\r"
+            let bytes = [];
+            const frameString = frame.map(byte => String.fromCharCode(byte)).join('');
+            const colonIndex = frameString.indexOf(':');
+            if (colonIndex !== -1) {
+                // Extract everything after the colon
+                const dataAfterColon = frameString.substring(colonIndex + 1);
+                // Convert ASCII hex to bytes
+                for (let i = 0; i < dataAfterColon.length; i++) {
+                    if (dataAfterColon[i] === '\r')
+                        continue;
+                    const hexPair = dataAfterColon.substr(i, 2);
+                    if (hexPair.length === 2) {
+                        const byteValue = parseInt(hexPair, 16);
+                        if (!isNaN(byteValue)) {
+                            bytes.push(byteValue);
+                        }
+                        i++; // Skip next character since we used it
+                    }
+                }
+            }
+            else {
+                // Fallback to original ASCII conversion method
+                bytes = this._convertAsciiToBytes(frame);
+            }
             this._log("debug", "Converted bytes:", bytes);
             if (bytes.length < 2) {
                 return [];
@@ -97,7 +120,10 @@ export class CanSingleFrame extends BaseDecoder {
             }
             else {
                 currentByte |= nibble;
-                bytes.push(currentByte);
+                // Skip if byte pair is 0x00 or 0xAA
+                if (currentByte !== 0x00 && currentByte !== 0xAA) {
+                    bytes.push(currentByte);
+                }
                 currentByte = -1;
             }
         }
@@ -212,5 +238,11 @@ export class CanSingleFrame extends BaseDecoder {
             return noDataString === "NO DATA";
         }
         return false;
+    }
+    isAllAFrameResponse(frameString) {
+        // Remove any carriage returns and line feeds
+        const cleanFrame = frameString.replace(/[\r\n]/g, '');
+        // Check if all characters are 'A' (case insensitive)
+        return /^[Aa]+$/.test(cleanFrame);
     }
 }
