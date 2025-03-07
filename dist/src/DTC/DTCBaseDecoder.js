@@ -26,7 +26,11 @@ const DTC_MODES = {
 export class DTCBaseDecoder {
     constructor(config) {
         const { isCan = false, serviceMode, troubleCodeType, logPrefix } = config;
-        // Get mode response before creating decoder
+        // Set the service mode first so getModeResponseByte() can properly determine the response byte
+        this.serviceMode = serviceMode.toUpperCase();
+        this.troubleCodeType = troubleCodeType;
+        this.logPrefix = `${logPrefix} [DTC-${isCan ? "CAN" : "NonCAN"}]`;
+        // Get mode response after setting serviceMode
         const modeResponse = this.getModeResponseByte();
         // Use the correct mode response byte for both CAN and non-CAN decoders
         this.decoder = isCan ? new CanDecoder(modeResponse) : new NonCanDecoder();
@@ -36,16 +40,15 @@ export class DTCBaseDecoder {
         else {
             this.decoder.setModeResponse(modeResponse);
         }
-        this.serviceMode = serviceMode.toUpperCase();
-        this.troubleCodeType = troubleCodeType;
-        this.logPrefix = `${logPrefix} [DTC-${isCan ? "CAN" : "NonCAN"}]`;
         // Reference the methods rather than binding them to avoid property conflicts
         const decoderAny = this.decoder;
-        if (typeof decoderAny._log !== 'function') {
+        if (typeof decoderAny._log !== "function") {
             decoderAny._log = this._log.bind(this);
         }
-        if (typeof decoderAny.setDTC !== 'function') {
-            decoderAny.setDTC = this.setDTC.bind(this);
+        if (typeof decoderAny.setDTC !==
+            "function") {
+            decoderAny.setDTC =
+                this.setDTC.bind(this);
         }
     }
     decodeDTCs(rawResponseBytes) {
@@ -70,23 +73,28 @@ export class DTCBaseDecoder {
                 confirmedError: false,
                 egrSystem: false,
                 oxygenSensor: false,
-                catalyst: false
+                catalyst: false,
             };
         }
         // Parse individual status bits
         return {
             milActive,
-            dtcCount: milActive ? (statusByte & 0x7f) : (statusByte & 0x0f),
+            dtcCount: milActive ? statusByte & 0x7f : statusByte & 0x0f,
             currentError: (statusByte & 0x20) !== 0,
             pendingError: (statusByte & 0x10) !== 0,
             confirmedError: (statusByte & 0x08) !== 0,
             egrSystem: (statusByte & 0x04) !== 0,
             oxygenSensor: (statusByte & 0x02) !== 0,
-            catalyst: (statusByte & 0x01) !== 0
+            catalyst: (statusByte & 0x01) !== 0,
         };
     }
     getModeResponseByte() {
-        const service = Object.values(DTC_MODES).find((s) => s.REQUEST === this.serviceMode);
+        if (!this.serviceMode) {
+            this._log("error", `Invalid service mode: ${this.serviceMode}`);
+            return 0x43; // Default to mode 03 response
+        }
+        const upperMode = this.serviceMode.toUpperCase();
+        const service = Object.values(DTC_MODES).find((s) => s.REQUEST === upperMode);
         if (!service) {
             this._log("error", `Invalid service mode: ${this.serviceMode}`);
             return 0x43;
@@ -94,6 +102,10 @@ export class DTCBaseDecoder {
         return service.RESPONSE;
     }
     _validateServiceMode(mode) {
+        if (!mode) {
+            this._log("error", `Invalid service mode: ${mode}`);
+            return false;
+        }
         const upperMode = mode.toUpperCase();
         const isValid = Object.values(DTC_MODES).some((service) => service.REQUEST === upperMode);
         if (!isValid) {

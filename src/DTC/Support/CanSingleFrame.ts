@@ -151,10 +151,13 @@ export class CanSingleFrame extends BaseDecoder {
     const asciiString = asciiBytes.map(b => String.fromCharCode(b)).join('');
     this._log("debug", "Converting ASCII string:", asciiString);
     
-    // If this looks like a response with service mode + DTCs (e.g. "4302040201"),
-    // extract the DTCs directly
-    if (asciiString.startsWith("43")) {
-      // Process a string like "4302040201" which represents service 43 with DTCs
+    // Get the expected mode response prefix
+    const modeResponsePrefix = this.getModeResponseByte().toString(16).toUpperCase();
+    console.log({modeResponsePrefix})
+    // If this looks like a response with service mode + DTCs (e.g. "4302040201" or "4A01242F"),
+    // extract the DTCs directly - making this mode-agnostic
+    if (asciiString.startsWith(modeResponsePrefix)) {
+      // Process a string which represents service response with DTCs
       let hexDump = asciiString.replace(/[\r\n>]/g, ''); // Remove CR, LF, >
       
       // Extract bytes by converting pairs of characters to hex values

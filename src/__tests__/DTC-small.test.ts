@@ -72,7 +72,8 @@ describe('DTC Small Tests - Single Frame', () => {
       [52, 55, 48, 49, 48, 49, 13],
       [13, 62]
     ]);
-    expect(result).toEqual([]);
+    // The input is "470101" which represents a P0101 DTC in mode 07
+    expect(result).toEqual(['P0101']);
   });
 });
 

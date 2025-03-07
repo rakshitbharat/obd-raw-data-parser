@@ -55,6 +55,5 @@ export declare class CanDecoder extends BaseDecoder {
     private _isEmptyAsciiFormat;
     private _processCarAsciiHexFormat;
     private _processStandardAsciiHexFormat;
-    protected _decodeCAN_DTC(byte1: number, byte2: number): DTCObject | null;
 }
 export {};
