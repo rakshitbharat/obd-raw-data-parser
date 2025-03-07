@@ -87,7 +87,7 @@ export class DTCBaseDecoder {
     }
     _log(level, ...message) {
         if (false == false) {
-            return;
+            //return;
         }
         console.log(`[${level}] ${this.logPrefix}`, ...message);
     }

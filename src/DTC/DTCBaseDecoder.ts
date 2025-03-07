@@ -50,12 +50,12 @@ export class DTCBaseDecoder {
     this.logPrefix = `${logPrefix} [DTC-${isCan ? "CAN" : "NonCAN"}]`;
 
     // Reference the methods rather than binding them to avoid property conflicts
-    const decoderAny = this.decoder as any;
-    if (typeof decoderAny._log !== 'function') {
-      decoderAny._log = this._log.bind(this);
+    const decoderAny = this.decoder as unknown;
+    if (typeof (decoderAny as { _log?: (level: LogLevel, ...message: unknown[]) => void })._log !== 'function') {
+      (decoderAny as { _log?: (level: LogLevel, ...message: unknown[]) => void })._log = this._log.bind(this);
     }
-    if (typeof decoderAny.setDTC !== 'function') {
-      decoderAny.setDTC = this.setDTC.bind(this);
+    if (typeof (decoderAny as { setDTC?: (dtc: string) => void }).setDTC !== 'function') {
+      (decoderAny as { setDTC?: (dtc: string) => void }).setDTC = this.setDTC.bind(this);
     }
   }
 

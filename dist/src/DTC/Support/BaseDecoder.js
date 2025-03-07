@@ -86,16 +86,16 @@ export class BaseDecoder {
             const digit2 = (b1 >> 4) & 0x03;
             const digit3 = b1 & 0x0f;
             const digits45 = b2;
-            this._log('debug', 'Raw DTC values:', {
-                byte1: this.toHexString(b1),
-                byte2: this.toHexString(b2),
-                extracted: {
-                    type: this.toHexString(type),
-                    digit2: this.toHexString(digit2),
-                    digit3: this.toHexString(digit3),
-                    digits45: this.toHexString(digits45),
-                },
-            });
+            // this._log('debug', 'Raw DTC values:', {
+            //   byte1: this.toHexString(b1),
+            //   byte2: this.toHexString(b2),
+            //   extracted: {
+            //     type: this.toHexString(type),
+            //     digit2: this.toHexString(digit2),
+            //     digit3: this.toHexString(digit3),
+            //     digits45: this.toHexString(digits45),
+            //   },
+            // });
             if (!this.isValidDTCComponents(type, digit2, digit3, digits45)) {
                 return null;
             }

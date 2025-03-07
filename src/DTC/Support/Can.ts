@@ -287,16 +287,16 @@ export class CanDecoder extends BaseDecoder {
       const digit3 = b1 & 0x0f;
       const digits45 = b2;
 
-      // this._log("debug", "Raw DTC values:", {
-      //   byte1: this._toHexString(b1),
-      //   byte2: this._toHexString(b2),
-      //   extracted: {
-      //     type: this._toHexString(type),
-      //     digit2: this._toHexString(digit2),
-      //     digit3: this._toHexString(digit3),
-      //     digits45: this._toHexString(digits45),
-      //   },
-      // });
+      this._log("debug", "Raw DTC values:", {
+        byte1: this._toHexString(b1),
+        byte2: this._toHexString(b2),
+        extracted: {
+          type: this._toHexString(type),
+          digit2: this._toHexString(digit2),
+          digit3: this._toHexString(digit3),
+          digits45: this._toHexString(digits45),
+        },
+      });
 
       if (!this._isValidDTCComponents(type, digit2, digit3, digits45)) {
         return null;
@@ -389,12 +389,7 @@ export class CanDecoder extends BaseDecoder {
   }
 
   private _toHexString(value: number | null | undefined): string {
-    try {
-      if (value === null || value === undefined) return "null";
-      return "0x" + value.toString(16).padStart(2, "0").toUpperCase();
-    } catch {
-      return "invalid";
-    }
+    return value !== null && value !== undefined ? value.toString(16).toUpperCase() : "";
   }
 
   protected _log(level: LogLevel, ...message: unknown[]): void {

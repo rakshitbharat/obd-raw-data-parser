@@ -50,6 +50,11 @@ export declare class CanDecoder extends BaseDecoder {
         catalyst: boolean;
     };
     private _isMultiFrameResponse;
+    private _isAsciiHexFormat;
+    private _isCarFormat;
+    private _isEmptyAsciiFormat;
+    private _processCarAsciiHexFormat;
+    private _processStandardAsciiHexFormat;
     protected _decodeCAN_DTC(byte1: number, byte2: number): DTCObject | null;
 }
 export {};
