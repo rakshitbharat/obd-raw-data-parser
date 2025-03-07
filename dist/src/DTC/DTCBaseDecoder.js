@@ -58,15 +58,31 @@ export class DTCBaseDecoder {
         return this.decoder.getRawDTCs();
     }
     parseDTCStatus(statusByte) {
+        // Extract MIL status
+        const milActive = (statusByte & 0x80) !== 0;
+        // Simple DTC count case - when value is less than 0x20 and MIL is not set
+        if (!milActive && statusByte < 0x20) {
+            return {
+                milActive: false,
+                dtcCount: statusByte,
+                currentError: false,
+                pendingError: false,
+                confirmedError: false,
+                egrSystem: false,
+                oxygenSensor: false,
+                catalyst: false
+            };
+        }
+        // Parse individual status bits
         return {
-            milActive: (statusByte & 0x80) !== 0,
-            dtcCount: statusByte & 0x7f,
+            milActive,
+            dtcCount: milActive ? (statusByte & 0x7f) : (statusByte & 0x0f),
             currentError: (statusByte & 0x20) !== 0,
             pendingError: (statusByte & 0x10) !== 0,
             confirmedError: (statusByte & 0x08) !== 0,
             egrSystem: (statusByte & 0x04) !== 0,
             oxygenSensor: (statusByte & 0x02) !== 0,
-            catalyst: (statusByte & 0x01) !== 0,
+            catalyst: (statusByte & 0x01) !== 0
         };
     }
     getModeResponseByte() {
@@ -87,7 +103,7 @@ export class DTCBaseDecoder {
     }
     _log(level, ...message) {
         if (false == false) {
-            //return;
+            return;
         }
         console.log(`[${level}] ${this.logPrefix}`, ...message);
     }
