@@ -35,8 +35,10 @@ export class DTCBaseDecoder {
   constructor(config: DecoderConfig) {
     const { isCan = false, serviceMode, troubleCodeType, logPrefix } = config;
 
+    // Get mode response before creating decoder
     const modeResponse = this.getModeResponseByte();
     
+    // Use the correct mode response byte for both CAN and non-CAN decoders
     this.decoder = isCan ? new CanDecoder(modeResponse) : new NonCanDecoder();
     if (!isCan) {
       (this.decoder as NonCanDecoder).setModeResponse(modeResponse);
