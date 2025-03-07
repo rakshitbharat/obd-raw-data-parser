@@ -35,8 +35,10 @@ export class DTCBaseDecoder {
   constructor(config: DecoderConfig) {
     const { isCan = false, serviceMode, troubleCodeType, logPrefix } = config;
 
+    // Get mode response before creating decoder
     const modeResponse = this.getModeResponseByte();
     
+    // Use the correct mode response byte for both CAN and non-CAN decoders
     this.decoder = isCan ? new CanDecoder(modeResponse) : new NonCanDecoder();
     if (!isCan) {
       (this.decoder as NonCanDecoder).setModeResponse(modeResponse);
@@ -47,12 +49,13 @@ export class DTCBaseDecoder {
     this.troubleCodeType = troubleCodeType;
     this.logPrefix = `${logPrefix} [DTC-${isCan ? "CAN" : "NonCAN"}]`;
 
-    const decoderAny = this.decoder as any;
-    if (typeof decoderAny._log !== 'function') {
-      decoderAny._log = this._log.bind(this);
+    // Reference the methods rather than binding them to avoid property conflicts
+    const decoderAny = this.decoder as unknown;
+    if (typeof (decoderAny as { _log?: (level: LogLevel, ...message: unknown[]) => void })._log !== 'function') {
+      (decoderAny as { _log?: (level: LogLevel, ...message: unknown[]) => void })._log = this._log.bind(this);
     }
-    if (typeof decoderAny.setDTC !== 'function') {
-      decoderAny.setDTC = this.setDTC.bind(this);
+    if (typeof (decoderAny as { setDTC?: (dtc: string) => void }).setDTC !== 'function') {
+      (decoderAny as { setDTC?: (dtc: string) => void }).setDTC = this.setDTC.bind(this);
     }
   }
 
@@ -122,7 +125,7 @@ export class DTCBaseDecoder {
 
   private _log(level: LogLevel, ...message: unknown[]): void {
     if (false == false) {
-      return;
+      //return;
     }
     console.log(`[${level}] ${this.logPrefix}`, ...message);
   }

@@ -6,8 +6,8 @@ export class CanSingleFrame extends BaseDecoder {
         this.expectedDTCCount = 0;
         this.currentDTCCount = 0;
         this.rawDtcObjects = [];
-        // Remove default mode 03 assumption
-        this.modeResponse = modeResponse || 0x00;
+        // Use 0x43 (mode 03 response) as default instead of 0x00
+        this.modeResponse = modeResponse || 0x43;
     }
     setModeResponse(response) {
         this.modeResponse = response;
@@ -21,78 +21,84 @@ export class CanSingleFrame extends BaseDecoder {
             if (!rawResponseBytes.length || !rawResponseBytes[0].length) {
                 return [];
             }
-            const frame = rawResponseBytes[0];
-            // Check for NO DATA response
-            if (this.isNoDataResponse(frame)) {
-                this._log("debug", "NO DATA response detected");
-                return [];
-            }
-            // Parse CAN frame format "010\r0:43071\r"
-            let bytes = [];
-            const frameString = frame.map(byte => String.fromCharCode(byte)).join('');
-            const colonIndex = frameString.indexOf(':');
-            if (colonIndex !== -1) {
-                // Extract everything after the colon
-                const dataAfterColon = frameString.substring(colonIndex + 1);
-                // Convert ASCII hex to bytes
-                for (let i = 0; i < dataAfterColon.length; i++) {
-                    if (dataAfterColon[i] === '\r')
-                        continue;
-                    const hexPair = dataAfterColon.substr(i, 2);
-                    if (hexPair.length === 2) {
-                        const byteValue = parseInt(hexPair, 16);
-                        if (!isNaN(byteValue)) {
-                            bytes.push(byteValue);
-                        }
-                        i++; // Skip next character since we used it
-                    }
-                }
-            }
-            else {
-                // Fallback to original ASCII conversion method
-                bytes = this._convertAsciiToBytes(frame);
-            }
-            this._log("debug", "Converted bytes:", bytes);
-            if (bytes.length < 2) {
-                return [];
-            }
-            // Handle CAN format with 01 00 prefix
-            if (bytes[0] === 0x01 && bytes[1] === 0x00) {
-                // Remove the 01 00 prefix and any bytes up to the mode response
-                const modeIndex = bytes.findIndex(b => b === this.getModeResponseByte());
-                if (modeIndex !== -1) {
-                    bytes = bytes.slice(modeIndex);
-                }
-            }
-            // Check for mode response byte - now using passed in mode response
-            const expectedResponse = this.getModeResponseByte();
-            if (bytes[0] !== expectedResponse) {
-                this._log("debug", `Invalid mode response byte. Expected ${expectedResponse.toString(16)}, got ${bytes[0].toString(16)}`);
-                return [];
-            }
-            // Remove the mode response byte
-            const dtcBytes = bytes.slice(1);
-            this._log("debug", "DTC bytes:", dtcBytes);
-            // Check if all remaining bytes are zero (empty DTCs)
-            if (dtcBytes.every(b => b === 0)) {
-                return [];
-            }
-            // Process DTC bytes in pairs
-            for (let i = 0; i < dtcBytes.length - 1; i += 2) {
-                const byte1 = dtcBytes[i];
-                const byte2 = dtcBytes[i + 1];
-                // Skip if both bytes are zero
-                if (byte1 === 0 && byte2 === 0) {
+            // Process all frames, not just the first one
+            for (const frame of rawResponseBytes) {
+                if (!frame.length)
+                    continue;
+                // Skip common response terminators
+                if (frame.length <= 2 &&
+                    frame.some(b => b === 13 || b === 10 || b === 62)) { // CR, LF, >
                     continue;
                 }
-                const dtc = this._decodeDTC(byte1.toString(16).padStart(2, '0'), byte2.toString(16).padStart(2, '0'));
-                if (dtc) {
-                    rawDtcs.add(dtc);
-                    const dtcString = this._dtcToString(dtc);
-                    this._log("debug", "Decoded DTC:", dtcString);
-                    if (dtcString) {
-                        dtcs.add(dtcString);
-                        this.setDTC(dtcString);
+                // Parse CAN frame format or standard ASCII format
+                let bytes = [];
+                const frameString = frame.map(byte => String.fromCharCode(byte)).join('');
+                // Log the frame as string for debugging
+                this._log("debug", "Processing frame as string:", frameString);
+                const colonIndex = frameString.indexOf(':');
+                if (colonIndex !== -1) {
+                    // Extract everything after the colon
+                    const dataAfterColon = frameString.substring(colonIndex + 1);
+                    // Convert ASCII hex to bytes
+                    for (let i = 0; i < dataAfterColon.length; i++) {
+                        if (dataAfterColon[i] === '\r')
+                            continue;
+                        const hexPair = dataAfterColon.substr(i, 2);
+                        if (hexPair.length === 2) {
+                            const byteValue = parseInt(hexPair, 16);
+                            if (!isNaN(byteValue)) {
+                                bytes.push(byteValue);
+                            }
+                            i++; // Skip next character since we used it
+                        }
+                    }
+                }
+                else {
+                    // Use enhanced ASCII conversion
+                    bytes = this._convertAsciiToBytes(frame);
+                }
+                this._log("debug", "Converted bytes:", bytes);
+                if (bytes.length < 2) {
+                    continue; // Skip this frame and try next one
+                }
+                // Handle CAN format with 01 00 prefix
+                if (bytes[0] === 0x01 && bytes[1] === 0x00) {
+                    // Remove the 01 00 prefix and any bytes up to the mode response
+                    const modeIndex = bytes.findIndex(b => b === this.getModeResponseByte());
+                    if (modeIndex !== -1) {
+                        bytes = bytes.slice(modeIndex);
+                    }
+                }
+                // Check for mode response byte - now using passed in mode response
+                const expectedResponse = this.getModeResponseByte();
+                if (bytes[0] !== expectedResponse) {
+                    this._log("debug", `Invalid mode response byte. Expected ${expectedResponse.toString(16)}, got ${bytes[0].toString(16)}`);
+                    continue;
+                }
+                // Remove the mode response byte
+                const dtcBytes = bytes.slice(1);
+                this._log("debug", "DTC bytes:", dtcBytes);
+                // Check if all remaining bytes are zero (empty DTCs)
+                if (dtcBytes.every(b => b === 0)) {
+                    continue;
+                }
+                // Process DTC bytes in pairs
+                for (let i = 0; i < dtcBytes.length - 1; i += 2) {
+                    const byte1 = dtcBytes[i];
+                    const byte2 = dtcBytes[i + 1];
+                    // Skip if both bytes are zero
+                    if (byte1 === 0 && byte2 === 0) {
+                        continue;
+                    }
+                    const dtc = this._decodeDTC(byte1.toString(16).padStart(2, '0'), byte2.toString(16).padStart(2, '0'));
+                    if (dtc) {
+                        rawDtcs.add(dtc);
+                        const dtcString = this._dtcToString(dtc);
+                        this._log("debug", "Decoded DTC:", dtcString);
+                        if (dtcString) {
+                            dtcs.add(dtcString);
+                            this.setDTC(dtcString);
+                        }
                     }
                 }
             }
@@ -109,6 +115,28 @@ export class CanSingleFrame extends BaseDecoder {
     _convertAsciiToBytes(asciiBytes) {
         const bytes = [];
         let currentByte = -1;
+        // First log the ASCII value as string for debugging
+        const asciiString = asciiBytes.map(b => String.fromCharCode(b)).join('');
+        this._log("debug", "Converting ASCII string:", asciiString);
+        // If this looks like a response with service mode + DTCs (e.g. "4302040201"),
+        // extract the DTCs directly
+        if (asciiString.startsWith("43")) {
+            // Process a string like "4302040201" which represents service 43 with DTCs
+            let hexDump = asciiString.replace(/[\r\n>]/g, ''); // Remove CR, LF, >
+            // Extract bytes by converting pairs of characters to hex values
+            for (let i = 0; i < hexDump.length; i += 2) {
+                if (i + 1 < hexDump.length) {
+                    const hexPair = hexDump.substr(i, 2);
+                    const byteValue = parseInt(hexPair, 16);
+                    if (!isNaN(byteValue)) {
+                        bytes.push(byteValue);
+                    }
+                }
+            }
+            this._log("debug", "Extracted bytes from ASCII hex string:", bytes);
+            return bytes;
+        }
+        // Original conversion method as fallback
         for (const ascii of asciiBytes) {
             if (ascii === 13)
                 continue; // Skip CR
@@ -215,7 +243,7 @@ export class CanSingleFrame extends BaseDecoder {
     }
     _log(level, ...message) {
         if (false == false) {
-            return;
+            //return;
         }
         console.log(`[${level}]`, ...message);
     }
