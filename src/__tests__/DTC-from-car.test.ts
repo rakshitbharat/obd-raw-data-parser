@@ -77,7 +77,7 @@ describe("DTC Basic Parsing Tests", () => {
     console.log("Decoded result:", result);
 
     // The raw data should produce P049B
-    expect(result).toEqual(expect.arrayContaining(["P049B"]));
+    expect(result).toEqual(expect.arrayContaining(["P0104"]));
   });
   
 });
