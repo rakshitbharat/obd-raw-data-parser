@@ -60,4 +60,24 @@ describe("DTC Basic Parsing Tests", () => {
     // The raw data should now produce P242F
     expect(result).toEqual(expect.arrayContaining(["P242F"]));
   });
+
+  test("should correctly decode P049B from raw response", () => {
+    const decoder = new DTCBaseDecoder({
+      ...baseConfig,
+      isCan: true,
+      serviceMode: "0A", // Mode 0A for permanent DTCs
+      troubleCodeType: "PERMANENT",
+    });
+
+    // Raw response: 4A01049B\r4A00\r\r>
+    const response = [[52,65,48,49,48,52,57,66,13],[52,65,48,48,13],[13,62]];
+
+    const result = decoder.decodeDTCs(response);
+
+    console.log("Decoded result:", result);
+
+    // The raw data should produce P049B
+    expect(result).toEqual(expect.arrayContaining(["P049B"]));
+  });
+  
 });
