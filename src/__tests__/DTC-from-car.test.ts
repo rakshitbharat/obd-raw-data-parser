@@ -81,4 +81,37 @@ describe("DTC Basic Parsing Tests", () => {
     expect(result).toEqual(expect.arrayContaining(["P0104"]));
   });
   
+  // describe("Car DTC Responses", () => {
+  //   test("should decode P0102 and P0113 from mode 03 response", () => {
+  //     const decoder = new DTCBaseDecoder({
+  //       ...baseConfig,
+  //       isCan: true,
+  //       serviceMode: "03",
+  //       troubleCodeType: "CURRENT",
+  //     });
+
+  //     const response = [
+  //       [48, 49, 48, 13, 48, 58, 52, 51, 48, 50, 48, 49, 48, 50, 48, 49, 49, 51, 13],
+  //       [13, 62]
+  //     ];
+  //     const result = decoder.decodeDTCs(response);
+  //     expect(result).toEqual(["P0102", "P0113"]);
+  //   });
+
+  //   test("should decode P0102 and P0113 from mode 07 response", () => {
+  //     const decoder = new DTCBaseDecoder({
+  //       ...baseConfig,
+  //       isCan: true,
+  //       serviceMode: "07",
+  //       troubleCodeType: "PENDING",
+  //     });
+
+  //     const response = [
+  //       [48, 49, 48, 13, 48, 58, 52, 55, 48, 50, 48, 49, 48, 50, 48, 49, 49, 51, 13],
+  //       [13, 62]
+  //     ];
+  //     const result = decoder.decodeDTCs(response);
+  //     expect(result).toEqual(["P0102", "P0113"]);
+  //   });
+  // });
 });
