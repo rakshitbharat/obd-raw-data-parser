@@ -7,6 +7,8 @@ import {
   DTCObject,
   LogLevel,
 } from "./dtc.js";
+import { toHexString, formatMessage } from "../utils.js";
+import { handleFrameSequence } from "./utils/dtcDecoder.js";
 
 const DTC_MODES: Record<string, DTCMode> = {
   MODE03: {
@@ -70,7 +72,7 @@ export class DTCBaseDecoder {
         decoderAny as {
           _log?: (level: LogLevel, ...message: unknown[]) => void;
         }
-      )._log = this._log.bind(this);
+      )._log = this.log.bind(this);
     }
     if (
       typeof (decoderAny as { setDTC?: (dtc: string) => void }).setDTC !==
@@ -82,10 +84,14 @@ export class DTCBaseDecoder {
   }
 
   public decodeDTCs(rawResponseBytes: number[][]): string[] {
-    if (!this._validateServiceMode(this.serviceMode)) {
+    if (!this.validateServiceMode(this.serviceMode)) {
       return [];
     }
-    return this.decoder.decodeDTCs(rawResponseBytes);
+
+    // Handle frame sequences and normalize
+    const processedFrames = handleFrameSequence(rawResponseBytes);
+
+    return this.decoder.decodeDTCs(processedFrames);
   }
 
   public getRawDTCs(): DTCObject[] {
@@ -93,6 +99,10 @@ export class DTCBaseDecoder {
   }
 
   public parseDTCStatus(statusByte: number): DTCStatus {
+    // Convert status byte to hex for logging
+    const statusHex = toHexString(statusByte);
+    this.log("debug", `Parsing DTC status: ${statusHex}`);
+
     // Extract MIL status
     const milActive = (statusByte & 0x80) !== 0;
 
@@ -125,7 +135,13 @@ export class DTCBaseDecoder {
 
   private getModeResponseByte(): number {
     if (!this.serviceMode) {
-      this._log("error", `Invalid service mode: ${this.serviceMode}`);
+      this.log(
+        "error",
+        formatMessage(
+          `Invalid service mode: ${this.serviceMode}`,
+          this.logPrefix
+        )
+      );
       return 0x43; // Default to mode 03 response
     }
 
@@ -134,15 +150,15 @@ export class DTCBaseDecoder {
       (s) => s.REQUEST === upperMode
     );
     if (!service) {
-      this._log("error", `Invalid service mode: ${this.serviceMode}`);
+      this.log("error", `Invalid service mode: ${this.serviceMode}`);
       return 0x43;
     }
     return service.RESPONSE;
   }
 
-  private _validateServiceMode(mode: string): boolean {
+  private validateServiceMode(mode: string): boolean {
     if (!mode) {
-      this._log("error", `Invalid service mode: ${mode}`);
+      this.log("error", `Invalid service mode: ${mode}`);
       return false;
     }
 
@@ -152,19 +168,28 @@ export class DTCBaseDecoder {
     );
 
     if (!isValid) {
-      this._log("error", `Invalid service mode: ${mode}`);
+      this.log("error", `Invalid service mode: ${mode}`);
     }
     return isValid;
   }
 
-  private _log(level: LogLevel, ...message: unknown[]): void {
+  private log(level: LogLevel, ...message: unknown[]): void {
     if (false == false) {
       //return;
     }
-    console.log(`[${level}] ${this.logPrefix}`, ...message);
+    console.log(
+      formatMessage(`[${level}] ${this.logPrefix}`, "", ""),
+      ...message
+    );
   }
 
   private setDTC(dtc: string): void {
-    console.log(`Setting ${this.troubleCodeType} DTC: ${dtc}`);
+    this.log(
+      "info",
+      formatMessage(
+        `Setting ${this.troubleCodeType} DTC: ${dtc}`,
+        this.logPrefix
+      )
+    );
   }
 }
