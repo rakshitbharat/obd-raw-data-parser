@@ -1,7 +1,7 @@
-import { LogLevel, DTCObject } from "../dtc.js";
+import { LogLevel } from "../dtc.js";
 import { BaseDecoder } from "./BaseDecoder.js";
 import { byteArrayToString, parseHexInt, formatMessage } from "../../utils.js";
-import { decodeDTC, dtcToString } from "../utils/dtcDecoder.js";
+import { hexToDTC } from "../utils/dtcConverter.js";
 
 export class NonCanDecoder extends BaseDecoder {
   protected _determineFrameType(frame: number[]): "colon" | "no-colon" {
@@ -137,11 +137,17 @@ export class NonCanDecoder extends BaseDecoder {
     return undefined;
   }
 
-  protected _decodeDTC(byte1: string, byte2: string): DTCObject | null {
-    return decodeDTC(byte1, byte2);
+  protected _decodeDTC(byte1: string, byte2: string): string | null {
+    try {
+      const combinedHex = byte1.padStart(2, '0') + byte2.padStart(2, '0');
+      return hexToDTC(combinedHex);
+    } catch (error) {
+      this._log("error", "Failed to decode DTC:", error);
+      return null;
+    }
   }
 
-  protected _dtcToString(dtc: DTCObject): string | null {
-    return dtcToString(dtc);
+  protected _dtcToString(dtc: string): string | null {
+    return dtc; // Already in the correct format from hexToDTC
   }
 }

@@ -1,11 +1,10 @@
 import { CanDecoder } from "./Support/Can.js";
 import { NonCanDecoder } from "./Support/NonCan.js";
+import { LogLevel, DTCObject, DTCResult } from "./dtc.js";
 import {
   DecoderConfig,
   DTCMode,
   DTCStatus,
-  DTCObject,
-  LogLevel,
 } from "./dtc.js";
 import { toHexString, formatMessage } from "../utils.js";
 import { handleFrameSequence } from "./utils/dtcDecoder.js";
@@ -95,7 +94,31 @@ export class DTCBaseDecoder {
   }
 
   public getRawDTCs(): DTCObject[] {
-    return this.decoder.getRawDTCs();
+    const rawDtcs = this.decoder.getRawDTCs() as DTCResult[];
+    // Convert string DTCs to DTCObject format if needed
+    return rawDtcs.map(dtc => {
+      if (typeof dtc === 'string') {
+        // Convert string DTC to DTCObject format
+        const match = dtc.match(/^([PCBU])(\d)(\d)(\d{2})$/);
+        if (match) {
+          const [, category, d2, d3, d45] = match;
+          return {
+            type: 'PCBU'.indexOf(category),
+            digit2: parseInt(d2),
+            digit3: parseInt(d3),
+            digits45: parseInt(d45, 16)
+          };
+        }
+        // Return a default DTCObject if string format is invalid
+        return {
+          type: 0,
+          digit2: 0,
+          digit3: 0,
+          digits45: 0
+        };
+      }
+      return dtc;
+    });
   }
 
   public parseDTCStatus(statusByte: number): DTCStatus {

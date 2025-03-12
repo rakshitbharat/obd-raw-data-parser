@@ -7,22 +7,14 @@ import {
   parseHexInt,
   formatMessage,
 } from "../../utils.js";
-import { decodeDTC, dtcToString } from "../utils/dtcDecoder.js";
-
-// Add DTCObject interface at the top
-interface DTCObject {
-  type: number;
-  digit2: number;
-  digit3: number;
-  digits45: number;
-}
+import { hexToDTC } from "../utils/dtcConverter.js";
 
 export class CanDecoder extends BaseDecoder {
   private singleFrameDecoder: CanSingleFrame;
   protected leftoverByte: string | null = null;
   protected expectedDTCCount = 0;
   protected currentDTCCount = 0;
-  protected rawDtcObjects: DTCObject[] = [];
+  protected rawDtcObjects: string[] = [];
   private modeResponse: number;
 
   constructor(modeResponse?: number) {
@@ -98,7 +90,7 @@ export class CanDecoder extends BaseDecoder {
       }
 
       const dtcs = new Set<string>();
-      const rawDtcs = new Set<DTCObject>();
+      const rawDtcs = new Set<string>();
 
       this._log("debug", "Processing raw response bytes:", rawResponseBytes);
 
@@ -213,7 +205,7 @@ export class CanDecoder extends BaseDecoder {
   private _processDTCBytes(
     bytes: string[],
     dtcs: Set<string>,
-    rawDtcs: Set<DTCObject>,
+    rawDtcs: Set<string>,
     frameIndex: number,
     isCANFrame: boolean
   ): void {
@@ -292,20 +284,18 @@ export class CanDecoder extends BaseDecoder {
     }
   }
 
-  protected _decodeDTC(byte1: string, byte2: string): DTCObject | null {
-    const dtc = decodeDTC(byte1, byte2);
-    if (dtc) {
-      this._log("debug", "Decoded DTC:", dtc);
+  protected _decodeDTC(byte1: string, byte2: string): string | null {
+    try {
+      const combinedHex = byte1.padStart(2, '0') + byte2.padStart(2, '0');
+      return hexToDTC(combinedHex);
+    } catch (error) {
+      this._log("error", "Failed to decode DTC:", error);
+      return null;
     }
-    return dtc;
   }
 
-  protected _dtcToString(dtc: DTCObject): string | null {
-    const dtcString = dtcToString(dtc);
-    if (dtcString) {
-      this._log("debug", "Converted DTC to string:", dtcString);
-    }
-    return dtcString;
+  protected _dtcToString(dtc: string): string | null {
+    return dtc; // Already in the correct format from hexToDTC
   }
 
   protected _log(level: LogLevel, ...message: unknown[]): void {

@@ -6,19 +6,13 @@ import {
   parseHexInt,
   formatMessage,
 } from "../../utils.js";
-
-interface DTCObject {
-  type: number;
-  digit2: number;
-  digit3: number;
-  digits45: number;
-}
+import { hexToDTC } from "../utils/dtcConverter.js";
 
 export class CanSingleFrame extends BaseDecoder {
   protected leftoverByte: string | null = null;
   protected expectedDTCCount = 0;
   protected currentDTCCount = 0;
-  protected rawDtcObjects: DTCObject[] = [];
+  protected rawDtcObjects: string[] = [];
   private modeResponse: number;
 
   constructor(modeResponse?: number) {
@@ -35,7 +29,7 @@ export class CanSingleFrame extends BaseDecoder {
     try {
       this.reset();
       const dtcs = new Set<string>();
-      const rawDtcs = new Set<DTCObject>();
+      const rawDtcs = new Set<string>();
 
       this._log("debug", "Processing raw response bytes:", rawResponseBytes);
 
@@ -141,11 +135,10 @@ export class CanSingleFrame extends BaseDecoder {
           );
           if (dtc) {
             rawDtcs.add(dtc);
-            const dtcString = this._dtcToString(dtc);
-            this._log("debug", "Decoded DTC:", dtcString);
-            if (dtcString) {
-              dtcs.add(dtcString);
-              this.setDTC(dtcString);
+            this._log("debug", "Decoded DTC:", dtc);
+            if (dtc) {
+              dtcs.add(dtc);
+              this.setDTC(dtc);
             }
           }
         }
@@ -228,98 +221,18 @@ export class CanSingleFrame extends BaseDecoder {
     return -1;
   }
 
-  protected _decodeDTC(byte1: string, byte2: string): DTCObject | null {
+  protected _decodeDTC(byte1: string, byte2: string): string | null {
     try {
-      const b1 = parseHexInt(byte1);
-      const b2 = parseHexInt(byte2);
-      if (isNaN(b1) || isNaN(b2)) {
-        this._log(
-          "debug",
-          formatMessage(
-            "Invalid DTC bytes:",
-            "",
-            JSON.stringify({ byte1, byte2 })
-          )
-        );
-        return null;
-      }
-
-      if (b1 >> 4 === 0x0c) {
-        const digit2 = b1 & 0x0f;
-        const byte2Hex = toHexString(parseHexInt(byte2), 2);
-        const digit3 = parseHexInt(byte2Hex[0]);
-        const digits45 = parseHexInt(byte2Hex[1]);
-
-        return {
-          type: 1,
-          digit2,
-          digit3,
-          digits45,
-        };
-      }
-
-      const type = (b1 >> 6) & 0x03;
-      const digit2 = (b1 >> 4) & 0x03;
-      const digit3 = b1 & 0x0f;
-      const digits45 = b2;
-      return { type, digit2, digit3, digits45 };
+      const combinedHex = byte1.padStart(2, '0') + byte2.padStart(2, '0');
+      return hexToDTC(combinedHex);
     } catch (error) {
-      this._log("error", formatMessage("DTC decode error:", "", String(error)));
+      this._log("error", "Failed to decode DTC:", error);
       return null;
     }
   }
 
-  protected _dtcToString(dtc: DTCObject): string | null {
-    try {
-      if (!dtc || typeof dtc !== "object") return null;
-
-      const typeIndex = dtc.type;
-      const digit2 = dtc.digit2;
-      const digit3 = dtc.digit3;
-      const digits45 = dtc.digits45;
-
-      if (!this._isValidDTCComponents(typeIndex, digit2, digit3, digits45)) {
-        return null;
-      }
-
-      const types = ["P", "C", "B", "U"];
-      const typeChar = types[typeIndex];
-      const digit3Hex = toHexString(digit3, 1).toUpperCase();
-      const digits45Hex = toHexString(digits45, 2).toUpperCase();
-
-      return `${typeChar}${digit2}${digit3Hex}${digits45Hex}`;
-    } catch (error) {
-      this._log(
-        "error",
-        formatMessage("DTC string conversion error:", "", String(error))
-      );
-      return null;
-    }
-  }
-
-  private _isValidDTCComponents(
-    type: number,
-    digit2: number,
-    digit3: number,
-    digits45: number
-  ): boolean {
-    const validations = [
-      { value: type, max: 3, name: "type" },
-      { value: digit2, max: 3, name: "digit2" },
-      { value: digit3, max: 15, name: "digit3" },
-      { value: digits45, max: 255, name: "digits45" },
-    ];
-
-    return validations.every(({ value, max, name }) => {
-      const valid = value >= 0 && value <= max;
-      if (!valid) {
-        this._log(
-          "debug",
-          `Invalid ${name} value: ${value}, max allowed: ${max}`
-        );
-      }
-      return valid;
-    });
+  protected _dtcToString(dtc: string): string | null {
+    return dtc; // Already in the correct format from hexToDTC
   }
 
   protected _log(level: LogLevel, ...message: unknown[]): void {
