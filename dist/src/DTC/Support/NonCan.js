@@ -1,8 +1,10 @@
-import { BaseDecoder } from './BaseDecoder.js';
+import { BaseDecoder } from "./BaseDecoder.js";
+import { byteArrayToString, parseHexInt, formatMessage } from "../../utils.js";
+import { decodeDTC, dtcToString } from "../utils/dtcDecoder.js";
 export class NonCanDecoder extends BaseDecoder {
     _determineFrameType(frame) {
         const colonIndex = frame.indexOf(58);
-        return colonIndex !== -1 ? 'colon' : 'no-colon';
+        return colonIndex !== -1 ? "colon" : "no-colon";
     }
     _extractBytesFromColonFrame(frame, colonIndex) {
         let dataStartIndex = colonIndex + 1;
@@ -20,19 +22,14 @@ export class NonCanDecoder extends BaseDecoder {
     }
     _extractBytesFromData(dataArray) {
         const bytes = [];
-        let hexString = '';
-        for (const byte of dataArray) {
-            if (byte < 32 || byte === 32)
-                continue;
-            hexString += String.fromCharCode(byte);
-        }
+        const hexString = byteArrayToString(dataArray).replace(/[\s\x00-\x1F]/g, "");
         for (let i = 0; i < hexString.length; i += 2) {
             const pair = hexString.substr(i, 2);
             if (pair.length === 2) {
                 bytes.push(pair);
             }
         }
-        this._log('debug', 'Converted ASCII to bytes:', bytes);
+        this._log("debug", formatMessage("Converted ASCII to bytes:", "", JSON.stringify(bytes)));
         return bytes;
     }
     decodeDTCs(rawResponseBytes) {
@@ -45,7 +42,7 @@ export class NonCanDecoder extends BaseDecoder {
                     continue;
                 const frameType = this._determineFrameType(frame);
                 let bytes;
-                if (frameType === 'colon') {
+                if (frameType === "colon") {
                     bytes = this._extractBytesFromColonFrame(frame, frame.indexOf(58));
                 }
                 else {
@@ -54,7 +51,7 @@ export class NonCanDecoder extends BaseDecoder {
                 if (!bytes || bytes.length === 0)
                     continue;
                 if (frameIndex === 0) {
-                    const modeResponse = parseInt(bytes[0], 16);
+                    const modeResponse = parseHexInt(bytes[0]);
                     if (modeResponse === this.getModeResponseByte()) {
                         bytes = bytes.slice(1);
                     }
@@ -78,7 +75,7 @@ export class NonCanDecoder extends BaseDecoder {
             return Array.from(dtcs);
         }
         catch (error) {
-            this._log('error', 'Failed to parse response:', error);
+            this._log("error", formatMessage("Failed to parse response:", "", String(error)));
             return [];
         }
     }
@@ -95,8 +92,8 @@ export class NonCanDecoder extends BaseDecoder {
         return 0;
     }
     setModeResponse(modeResponse) {
-        Object.defineProperty(this, 'getModeResponseByte', {
-            value: () => modeResponse
+        Object.defineProperty(this, "getModeResponseByte", {
+            value: () => modeResponse,
         });
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -104,24 +101,9 @@ export class NonCanDecoder extends BaseDecoder {
         return undefined;
     }
     _decodeDTC(byte1, byte2) {
-        try {
-            const b1 = parseInt(byte1, 16);
-            const b2 = parseInt(byte2, 16);
-            if (isNaN(b1) || isNaN(b2) || (b1 === 0 && b2 === 0)) {
-                return null;
-            }
-            const type = (b1 >> 6) & 0x03;
-            const digit2 = (b1 >> 4) & 0x03;
-            const digit3 = b1 & 0x0f;
-            const digits45 = b2;
-            if (!this.isValidDTCComponents(type, digit2, digit3, digits45)) {
-                return null;
-            }
-            return { type, digit2, digit3, digits45 };
-        }
-        catch (error) {
-            this._log('error', 'DTC decode error:', error);
-            return null;
-        }
+        return decodeDTC(byte1, byte2);
+    }
+    _dtcToString(dtc) {
+        return dtcToString(dtc);
     }
 }

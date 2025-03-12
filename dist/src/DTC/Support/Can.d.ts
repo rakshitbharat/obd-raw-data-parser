@@ -13,7 +13,6 @@ export declare class CanDecoder extends BaseDecoder {
     protected currentDTCCount: number;
     protected rawDtcObjects: DTCObject[];
     private modeResponse;
-    private static readonly invalidDTCBytes;
     constructor(modeResponse?: number);
     setModeResponse(response: number): void;
     private bindMethodsToSingleFrameDecoder;
@@ -24,15 +23,7 @@ export declare class CanDecoder extends BaseDecoder {
     private _getNibbleValue;
     private _processDTCBytes;
     protected _decodeDTC(byte1: string, byte2: string): DTCObject | null;
-    protected _dtcToString(dtc: {
-        type: number;
-        digit2: number;
-        digit3: number;
-        digits45: number;
-    }): string | null;
-    private _parseByteValue;
-    private _isValidDTCComponents;
-    private _toHexString;
+    protected _dtcToString(dtc: DTCObject): string | null;
     protected _log(level: LogLevel, ...message: unknown[]): void;
     protected setDTC(dtc: string): void;
     protected getModeResponseByte(): number;

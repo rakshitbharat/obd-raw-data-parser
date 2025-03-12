@@ -1,5 +1,7 @@
 import { CanDecoder } from "./Support/Can.js";
 import { NonCanDecoder } from "./Support/NonCan.js";
+import { toHexString, formatMessage } from "../utils.js";
+import { handleFrameSequence } from "./utils/dtcDecoder.js";
 const DTC_MODES = {
     MODE03: {
         REQUEST: "03",
@@ -43,7 +45,7 @@ export class DTCBaseDecoder {
         // Reference the methods rather than binding them to avoid property conflicts
         const decoderAny = this.decoder;
         if (typeof decoderAny._log !== "function") {
-            decoderAny._log = this._log.bind(this);
+            decoderAny._log = this.log.bind(this);
         }
         if (typeof decoderAny.setDTC !==
             "function") {
@@ -52,15 +54,20 @@ export class DTCBaseDecoder {
         }
     }
     decodeDTCs(rawResponseBytes) {
-        if (!this._validateServiceMode(this.serviceMode)) {
+        if (!this.validateServiceMode(this.serviceMode)) {
             return [];
         }
-        return this.decoder.decodeDTCs(rawResponseBytes);
+        // Handle frame sequences and normalize
+        const processedFrames = handleFrameSequence(rawResponseBytes);
+        return this.decoder.decodeDTCs(processedFrames);
     }
     getRawDTCs() {
         return this.decoder.getRawDTCs();
     }
     parseDTCStatus(statusByte) {
+        // Convert status byte to hex for logging
+        const statusHex = toHexString(statusByte);
+        this.log("debug", `Parsing DTC status: ${statusHex}`);
         // Extract MIL status
         const milActive = (statusByte & 0x80) !== 0;
         // Simple DTC count case - when value is less than 0x20 and MIL is not set
@@ -90,36 +97,36 @@ export class DTCBaseDecoder {
     }
     getModeResponseByte() {
         if (!this.serviceMode) {
-            this._log("error", `Invalid service mode: ${this.serviceMode}`);
+            this.log("error", formatMessage(`Invalid service mode: ${this.serviceMode}`, this.logPrefix));
             return 0x43; // Default to mode 03 response
         }
         const upperMode = this.serviceMode.toUpperCase();
         const service = Object.values(DTC_MODES).find((s) => s.REQUEST === upperMode);
         if (!service) {
-            this._log("error", `Invalid service mode: ${this.serviceMode}`);
+            this.log("error", `Invalid service mode: ${this.serviceMode}`);
             return 0x43;
         }
         return service.RESPONSE;
     }
-    _validateServiceMode(mode) {
+    validateServiceMode(mode) {
         if (!mode) {
-            this._log("error", `Invalid service mode: ${mode}`);
+            this.log("error", `Invalid service mode: ${mode}`);
             return false;
         }
         const upperMode = mode.toUpperCase();
         const isValid = Object.values(DTC_MODES).some((service) => service.REQUEST === upperMode);
         if (!isValid) {
-            this._log("error", `Invalid service mode: ${mode}`);
+            this.log("error", `Invalid service mode: ${mode}`);
         }
         return isValid;
     }
-    _log(level, ...message) {
+    log(level, ...message) {
         if (false == false) {
             //return;
         }
-        console.log(`[${level}] ${this.logPrefix}`, ...message);
+        console.log(formatMessage(`[${level}] ${this.logPrefix}`, "", ""), ...message);
     }
     setDTC(dtc) {
-        console.log(`Setting ${this.troubleCodeType} DTC: ${dtc}`);
+        this.log("info", formatMessage(`Setting ${this.troubleCodeType} DTC: ${dtc}`, this.logPrefix));
     }
 }

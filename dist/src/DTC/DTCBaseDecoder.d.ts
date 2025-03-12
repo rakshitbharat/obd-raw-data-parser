@@ -9,7 +9,7 @@ export declare class DTCBaseDecoder {
     getRawDTCs(): DTCObject[];
     parseDTCStatus(statusByte: number): DTCStatus;
     private getModeResponseByte;
-    private _validateServiceMode;
-    private _log;
+    private validateServiceMode;
+    private log;
     private setDTC;
 }

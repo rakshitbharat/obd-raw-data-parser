@@ -1,7 +1,7 @@
-import { LogLevel, DTCObject } from '../dtc.js';
-import { BaseDecoder } from './BaseDecoder.js';
+import { LogLevel, DTCObject } from "../dtc.js";
+import { BaseDecoder } from "./BaseDecoder.js";
 export declare class NonCanDecoder extends BaseDecoder {
-    protected _determineFrameType(frame: number[]): 'colon' | 'no-colon';
+    protected _determineFrameType(frame: number[]): "colon" | "no-colon";
     protected _extractBytesFromColonFrame(frame: number[], colonIndex: number): string[];
     protected _extractBytesFromNoColonFrame(frame: number[]): string[];
     protected _extractBytesFromData(dataArray: number[]): string[];
@@ -12,4 +12,5 @@ export declare class NonCanDecoder extends BaseDecoder {
     setModeResponse(modeResponse: number): void;
     protected _getDTCInfo(_dtcLevel: string, _dtcMessage: string): Error | undefined;
     protected _decodeDTC(byte1: string, byte2: string): DTCObject | null;
+    protected _dtcToString(dtc: DTCObject): string | null;
 }
