@@ -139,6 +139,10 @@ export class NonCanDecoder extends BaseDecoder {
 
   protected _decodeDTC(byte1: string, byte2: string): string | null {
     try {
+      // Skip null, undefined, or "00" bytes
+      if (!byte1 || !byte2 || (byte1 === "00" && byte2 === "00")) {
+        return null;
+      }
       const combinedHex = byte1.padStart(2, '0') + byte2.padStart(2, '0');
       return hexToDTC(combinedHex);
     } catch (error) {

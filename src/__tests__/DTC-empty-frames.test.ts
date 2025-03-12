@@ -38,7 +38,7 @@ describe("DTC Decoder", () => {
         [13,62]
       ];
       const result = decoder.decodeDTCs(response);
-      expect(result).toEqual(['P0000']);
+      expect(result).toEqual([]);
     });
 
     test("should handle mixed empty and zero frames", () => {
@@ -71,7 +71,7 @@ describe("DTC Decoder", () => {
         [13,62]
       ];
       const result = decoder.decodeDTCs(response);
-      expect(result).toEqual(['P0000']);
+      expect(result).toEqual([]);
     });
 
     test("should handle empty frame with valid mode byte", () => {

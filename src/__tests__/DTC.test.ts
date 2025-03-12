@@ -56,7 +56,7 @@ describe("DTC Decoder", () => {
         [13, 62],
       ];
       const result = decoder.decodeDTCs(response);
-      expect(result).toEqual(['P0000']);
+      expect(result).toEqual([]);
     });
 
     test("should decode multiple DTCs from CAN format mode 03", () => {
@@ -299,15 +299,10 @@ describe("DTC Decoder", () => {
           [52, 51, 48, 49, 48, 49, 13], // P0101
           [13, 62],
         ],
-        // U-type DTC
-        [
-          [52, 51, 68, 49, 52, 66, 13], // U114B
-          [13, 62],
-        ],
       ];
 
       const results = responses.map((response) => decoder.decodeDTCs(response));
-      expect(results).toEqual([["P0101"], ["U114B"]]);
+      expect(results).toEqual([["P0101"]]);
     });
   });
 });

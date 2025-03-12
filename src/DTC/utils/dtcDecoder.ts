@@ -2,52 +2,43 @@ import { DTCObject } from "../dtc.js";
 import { toHexString, parseHexInt } from "../../utils.js";
 
 export function decodeDTC(byte1: string, byte2: string): DTCObject | null {
-  try {
-    const b1 = parseHexInt(byte1);
-    const b2 = parseHexInt(byte2);
+    try {
+        const b1 = parseHexInt(byte1);
+        const b2 = parseHexInt(byte2);
 
-    if (isNaN(b1) || isNaN(b2) || (b1 === 0 && b2 === 0)) {
-      return null;
+        if (isNaN(b1) || isNaN(b2) || (b1 === 0 && b2 === 0)) {
+            return null;
+        }
+
+        // Try standard format first
+        const type = (b1 >> 6) & 0x03;
+        const digit2 = (b1 >> 4) & 0x03;
+        const digit3 = b1 & 0x0f;
+        const digits45 = b2;
+
+        if (isValidDTCComponents(type, digit2, digit3, digits45)) {
+            return { type, digit2, digit3, digits45 };
+        }
+
+        // Try car format (swapped bytes)
+        const swappedType = (b2 >> 6) & 0x03;
+        const swappedDigit2 = (b2 >> 4) & 0x03;
+        const swappedDigit3 = b2 & 0x0f;
+        const swappedDigits45 = b1;
+
+        if (isValidDTCComponents(swappedType, swappedDigit2, swappedDigit3, swappedDigits45)) {
+            return {
+                type: swappedType,
+                digit2: swappedDigit2,
+                digit3: swappedDigit3,
+                digits45: swappedDigits45
+            };
+        }
+
+        return null;
+    } catch {
+        return null;
     }
-
-    // Special case for C-type DTCs
-    if (b1 >> 4 === 0x0c) {
-      return {
-        type: 1, // C-type
-        digit2: b1 & 0x0f,
-        digit3: Math.floor(b2 / 16),
-        digits45: b2 % 16,
-      };
-    }
-
-    // Handle car response format (swapped bytes)
-    const type = (b1 >> 6) & 0x03;
-    const digit2 = (b1 >> 4) & 0x03;
-    const digit3 = b1 & 0x0f;
-    const digits45 = b2;
-
-    if (!isValidDTCComponents(type, digit2, digit3, digits45)) {
-      // Try swapped byte interpretation for car responses
-      const swappedB1 = (b2 >> 6) & 0x03;
-      const swappedD2 = (b2 >> 4) & 0x03;
-      const swappedD3 = b2 & 0x0f;
-      const swappedD45 = b1;
-
-      if (isValidDTCComponents(swappedB1, swappedD2, swappedD3, swappedD45)) {
-        return {
-          type: swappedB1,
-          digit2: swappedD2,
-          digit3: swappedD3,
-          digits45: swappedD45,
-        };
-      }
-      return null;
-    }
-
-    return { type, digit2, digit3, digits45 };
-  } catch {
-    return null;
-  }
 }
 
 export function dtcToString(dtc: DTCObject): string | null {
