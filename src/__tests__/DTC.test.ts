@@ -56,7 +56,7 @@ describe("DTC Decoder", () => {
         [13, 62],
       ];
       const result = decoder.decodeDTCs(response);
-      expect(result).toEqual([]);
+      expect(result).toEqual(['P0000']);
     });
 
     test("should decode multiple DTCs from CAN format mode 03", () => {

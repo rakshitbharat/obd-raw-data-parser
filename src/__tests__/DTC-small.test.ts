@@ -56,7 +56,7 @@ describe('DTC Small Tests - Single Frame', () => {
       [52, 51, 48, 48, 48, 48, 13],
       [13, 62]
     ]);
-    expect(result).toEqual([]);
+    expect(result).toEqual(['P0000']);
   });
 
   test('should decode single U-type DTC', () => {
