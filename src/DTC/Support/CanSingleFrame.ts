@@ -214,26 +214,112 @@ export class CanSingleFrame extends BaseDecoder {
       // Get everything after the mode response byte
       const dataAfterMode = frameString.substring(2);
       this._log("debug", `Full data after mode response: ${dataAfterMode}`);
-
-      // Process DTCs directly without looking for count
-      const dtcData = dataAfterMode;
+      
+      // Try to detect if the first byte is a count
+      let dtcData = dataAfterMode;
+      let countByte = false;
+      
+      if (dataAfterMode.length >= 2) {
+        const possibleCountHex = dataAfterMode.substring(0, 2);
+        const possibleCount = parseInt(possibleCountHex, 16);
+        
+        // Check if this looks like a valid count:
+        // 1. It's a reasonable number (not too large)
+        // 2. It's not likely part of a DTC itself
+        if (!isNaN(possibleCount) && 
+            possibleCount > 0 && 
+            possibleCount <= 20) { // Reasonable max limit
+          
+          this._log("debug", `Detected count byte: ${possibleCountHex} (${possibleCount} DTCs)`);
+          this.expectedDTCCount = possibleCount;
+          dtcData = dataAfterMode.substring(2); // Skip the count byte
+          countByte = true;
+        } else {
+          this._log("debug", `No count byte detected, parsing all data as DTCs`);
+        }
+      }
+      
       this._log("debug", `DTC hex data: ${dtcData}`);
 
-      // Process DTCs in chunks of 4 characters
-      for (let i = 0; i < dtcData.length; i += 4) {
-        // Make sure we have enough characters for a complete DTC
-        if (i + 3 < dtcData.length) {
-          const dtcHex = dtcData.substring(i, i + 4);
+      // Special case for 4301010113 pattern (count=1 with additional data)
+      if (countByte) {
+        // With a count byte, process the expected number of DTCs first
+        for (let i = 0; i < this.expectedDTCCount; i++) {
+          const startPos = i * 4;
           
-          // Skip empty or all-zero DTCs
-          if (dtcHex === "0000" || !/^[0-9A-F]{4}$/i.test(dtcHex)) {
-            continue;
+          // Make sure we have at least 2 chars for a minimal DTC
+          if (startPos + 1 < dtcData.length) {
+            let dtcHex;
+            
+            // Check if we have a full 4-char DTC
+            if (startPos + 3 < dtcData.length) {
+              dtcHex = dtcData.substring(startPos, startPos + 4);
+            } else {
+              // Handle shortened DTC (like "01" for P0101)
+              const shortCode = dtcData.substring(startPos);
+              if (shortCode.length === 2) {
+                // For 2-char codes like "01", use the format 0101 for P0101
+                dtcHex = `01${shortCode}`;
+                this._log("debug", `Expanded shortened DTC code: ${shortCode} -> ${dtcHex}`);
+              } else {
+                // Default padding if we don't have exactly 2 chars
+                dtcHex = shortCode.padEnd(4, '0');
+              }
+            }
+            
+            if (dtcHex === "0000" || !/^[0-9A-F]{4}$/i.test(dtcHex)) {
+              continue;
+            }
+            
+            const dtc = hexToDTC(dtcHex);
+            if (dtc) {
+              dtcs.add(dtc);
+              this._log("debug", `Found DTC: ${dtc} from hex ${dtcHex}`);
+              this.currentDTCCount++;
+            }
           }
+        }
+        
+        // After processing the expected DTCs, check for any additional DTCs in the remaining data
+        const processedChars = this.expectedDTCCount * 4;
+        
+        if (dtcData.length > processedChars) {
+          const remainingData = dtcData.substring(processedChars);
+          
+          // Check for additional complete DTCs (4 chars)
+          for (let i = 0; i < remainingData.length; i += 2) {
+            // If we have at least 2 chars, try to parse as a DTC
+            if (i + 1 < remainingData.length) {
+              const shortCode = remainingData.substring(i, i + 2);
+              // For P-type DTCs with 2 chars (like "13"), use format 0113 (P0113)
+              const additionalDtcHex = `01${shortCode}`;
+              
+              const additionalDtc = hexToDTC(additionalDtcHex);
+              if (additionalDtc) {
+                dtcs.add(additionalDtc);
+                this._log("debug", `Found additional DTC: ${additionalDtc} from hex ${additionalDtcHex}`);
+              }
+            }
+          }
+        }
+      } else {
+        // Standard processing in 4-byte chunks for no count byte format
+        for (let i = 0; i < dtcData.length; i += 4) {
+          // Make sure we have enough characters for a complete DTC
+          if (i + 3 < dtcData.length) {
+            const dtcHex = dtcData.substring(i, i + 4);
+            
+            // Skip empty or all-zero DTCs
+            if (dtcHex === "0000" || !/^[0-9A-F]{4}$/i.test(dtcHex)) {
+              continue;
+            }
 
-          const dtc = hexToDTC(dtcData);
-          if (dtc) {
-            dtcs.add(dtc);
-            this._log("debug", `Found DTC: ${dtc}`);
+            const dtc = hexToDTC(dtcHex);
+            if (dtc) {
+              dtcs.add(dtc);
+              this._log("debug", `Found DTC: ${dtc} from hex ${dtcHex}`);
+              this.currentDTCCount++;
+            }
           }
         }
       }

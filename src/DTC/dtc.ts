@@ -40,6 +40,6 @@ export interface DecoderConfig {
   readonly logPrefix: string;       // Prefix for logging messages
 }
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'warning';
 export type LogFunction = (level: LogLevel, ...message: unknown[]) => void;
 export type SetDTCFunction = (dtc: string) => void;

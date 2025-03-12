@@ -33,6 +33,15 @@ const mode03CANDecoder = new DTCBaseDecoder({
   serviceMode: "03",
   troubleCodeType: "CURRENT",
 });
+test('should decode single frame Mode 07 Pending DTCs', () => {
+  const result = mode07Decoder.decodeDTCs([
+    [52, 55, 48, 49, 48, 49, 13],
+    [13, 62]
+  ]);
+  // The input is "470101" which represents a P0101 DTC in mode 07
+  expect(result).toEqual(['P0101']);
+});
+
 
 describe('DTC Small Tests - Single Frame', () => {
   test('should decode single frame Mode 03 Current DTCs', () => {
