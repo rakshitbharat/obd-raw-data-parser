@@ -70,7 +70,7 @@
     "semantic-release": "^24.2.3",
     "ts-jest": "^29.2.6",
     "ts-node": "^10.9.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.8.2"
   },
   "dependencies": {
     "text-decoding": "^1.0.0"
