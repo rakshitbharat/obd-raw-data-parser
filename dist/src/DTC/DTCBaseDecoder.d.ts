@@ -1,4 +1,5 @@
-import { DecoderConfig, DTCStatus, DTCObject } from "./dtc.js";
+import { DTCObject } from "./dtc.js";
+import { DecoderConfig, DTCStatus } from "./dtc.js";
 export declare class DTCBaseDecoder {
     private readonly decoder;
     private readonly serviceMode;
@@ -9,7 +10,7 @@ export declare class DTCBaseDecoder {
     getRawDTCs(): DTCObject[];
     parseDTCStatus(statusByte: number): DTCStatus;
     private getModeResponseByte;
-    private _validateServiceMode;
-    private _log;
+    private validateServiceMode;
+    private log;
     private setDTC;
 }

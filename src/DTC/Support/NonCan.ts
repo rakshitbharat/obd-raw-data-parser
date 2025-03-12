@@ -1,13 +1,18 @@
-import { LogLevel, DTCObject } from '../dtc.js';
-import { BaseDecoder } from './BaseDecoder.js';
+import { LogLevel } from "../dtc.js";
+import { BaseDecoder } from "./BaseDecoder.js";
+import { byteArrayToString, parseHexInt, formatMessage } from "../../utils.js";
+import { hexToDTC } from "../utils/dtcConverter.js";
 
 export class NonCanDecoder extends BaseDecoder {
-  protected _determineFrameType(frame: number[]): 'colon' | 'no-colon' {
+  protected _determineFrameType(frame: number[]): "colon" | "no-colon" {
     const colonIndex = frame.indexOf(58);
-    return colonIndex !== -1 ? 'colon' : 'no-colon';
+    return colonIndex !== -1 ? "colon" : "no-colon";
   }
 
-  protected _extractBytesFromColonFrame(frame: number[], colonIndex: number): string[] {
+  protected _extractBytesFromColonFrame(
+    frame: number[],
+    colonIndex: number
+  ): string[] {
     let dataStartIndex = colonIndex + 1;
     while (dataStartIndex < frame.length && frame[dataStartIndex] === 32) {
       dataStartIndex++;
@@ -25,12 +30,10 @@ export class NonCanDecoder extends BaseDecoder {
 
   protected _extractBytesFromData(dataArray: number[]): string[] {
     const bytes: string[] = [];
-    let hexString = '';
-
-    for (const byte of dataArray) {
-      if (byte < 32 || byte === 32) continue;
-      hexString += String.fromCharCode(byte);
-    }
+    const hexString = byteArrayToString(dataArray).replace(
+      /[\s\x00-\x1F]/g,
+      ""
+    );
 
     for (let i = 0; i < hexString.length; i += 2) {
       const pair = hexString.substr(i, 2);
@@ -39,7 +42,10 @@ export class NonCanDecoder extends BaseDecoder {
       }
     }
 
-    this._log('debug', 'Converted ASCII to bytes:', bytes);
+    this._log(
+      "debug",
+      formatMessage("Converted ASCII to bytes:", "", JSON.stringify(bytes))
+    );
     return bytes;
   }
 
@@ -48,14 +54,18 @@ export class NonCanDecoder extends BaseDecoder {
       this.reset();
       const dtcs = new Set<string>();
 
-      for (let frameIndex = 0; frameIndex < rawResponseBytes.length; frameIndex++) {
+      for (
+        let frameIndex = 0;
+        frameIndex < rawResponseBytes.length;
+        frameIndex++
+      ) {
         const frame = rawResponseBytes[frameIndex];
         if (!Array.isArray(frame) || frame.length === 0) continue;
 
         const frameType = this._determineFrameType(frame);
         let bytes: string[];
 
-        if (frameType === 'colon') {
+        if (frameType === "colon") {
           bytes = this._extractBytesFromColonFrame(frame, frame.indexOf(58));
         } else {
           bytes = this._extractBytesFromNoColonFrame(frame);
@@ -64,7 +74,7 @@ export class NonCanDecoder extends BaseDecoder {
         if (!bytes || bytes.length === 0) continue;
 
         if (frameIndex === 0) {
-          const modeResponse = parseInt(bytes[0], 16);
+          const modeResponse = parseHexInt(bytes[0]);
           if (modeResponse === this.getModeResponseByte()) {
             bytes = bytes.slice(1);
           }
@@ -90,7 +100,10 @@ export class NonCanDecoder extends BaseDecoder {
 
       return Array.from(dtcs);
     } catch (error) {
-      this._log('error', 'Failed to parse response:', error);
+      this._log(
+        "error",
+        formatMessage("Failed to parse response:", "", String(error))
+      );
       return [];
     }
   }
@@ -111,35 +124,34 @@ export class NonCanDecoder extends BaseDecoder {
   }
 
   public setModeResponse(modeResponse: number): void {
-    Object.defineProperty(this, 'getModeResponseByte', {
-      value: () => modeResponse
+    Object.defineProperty(this, "getModeResponseByte", {
+      value: () => modeResponse,
     });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected _getDTCInfo(_dtcLevel: string, _dtcMessage: string): Error | undefined {
+  protected _getDTCInfo(
+    _dtcLevel: string,
+    _dtcMessage: string
+  ): Error | undefined {
     return undefined;
   }
 
-  protected _decodeDTC(byte1: string, byte2: string): DTCObject | null {
+  protected _decodeDTC(byte1: string, byte2: string): string | null {
     try {
-      const b1 = parseInt(byte1, 16);
-      const b2 = parseInt(byte2, 16);
-      if (isNaN(b1) || isNaN(b2) || (b1 === 0 && b2 === 0)) {
+      // Skip null, undefined, or "00" bytes
+      if (!byte1 || !byte2 || (byte1 === "00" && byte2 === "00")) {
         return null;
       }
-      const type = (b1 >> 6) & 0x03;
-      const digit2 = (b1 >> 4) & 0x03;
-      const digit3 = b1 & 0x0f;
-      const digits45 = b2;
-      
-      if (!this.isValidDTCComponents(type, digit2, digit3, digits45)) {
-        return null;
-      }
-      return { type, digit2, digit3, digits45 };
+      const combinedHex = byte1.padStart(2, '0') + byte2.padStart(2, '0');
+      return hexToDTC(combinedHex);
     } catch (error) {
-      this._log('error', 'DTC decode error:', error);
+      this._log("error", "Failed to decode DTC:", error);
       return null;
     }
+  }
+
+  protected _dtcToString(dtc: string): string | null {
+    return dtc; // Already in the correct format from hexToDTC
   }
 }

@@ -1,4 +1,6 @@
 import { BaseDecoder } from "./BaseDecoder.js";
+import { byteArrayToString, toHexString, formatMessage, } from "../../utils.js";
+import { hexToDTC } from "../utils/dtcConverter.js";
 export class CanSingleFrame extends BaseDecoder {
     constructor(modeResponse) {
         super();
@@ -12,9 +14,54 @@ export class CanSingleFrame extends BaseDecoder {
     setModeResponse(response) {
         this.modeResponse = response;
     }
+    _isAsciiHexFormat(frames) {
+        if (!frames || frames.length === 0)
+            return false;
+        for (const frame of frames) {
+            if (frame.length < 2)
+                continue;
+            const firstChar = String.fromCharCode(frame[0]);
+            const secondChar = String.fromCharCode(frame[1]);
+            if (firstChar === "4" &&
+                (secondChar === "3" ||
+                    secondChar === "7" ||
+                    secondChar === "A" ||
+                    secondChar === "a")) {
+                return true;
+            }
+        }
+        return false;
+    }
+    _isEmptyAsciiFormat(frames) {
+        const modeResponseHex = this.modeResponse.toString(16).toUpperCase();
+        for (const frame of frames) {
+            if (frame.length < 4)
+                continue;
+            const frameString = frame
+                .map((byte) => String.fromCharCode(byte))
+                .join("");
+            if (frameString.startsWith(`${modeResponseHex}00`) &&
+                frameString
+                    .substring(4)
+                    .replace(/[\r\n>]/g, "")
+                    .match(/^A+$/i)) {
+                return true;
+            }
+        }
+        return false;
+    }
     decodeDTCs(rawResponseBytes) {
         try {
             this.reset();
+            if (this._isEmptyAsciiFormat(rawResponseBytes)) {
+                this._log("debug", "Detected empty ASCII hex format, returning empty array");
+                return [];
+            }
+            const isAsciiHexFormat = this._isAsciiHexFormat(rawResponseBytes);
+            if (isAsciiHexFormat) {
+                this._log("debug", "Detected ASCII hex format response");
+                return this._processStandardAsciiHexFormat(rawResponseBytes);
+            }
             const dtcs = new Set();
             const rawDtcs = new Set();
             this._log("debug", "Processing raw response bytes:", rawResponseBytes);
@@ -26,78 +73,75 @@ export class CanSingleFrame extends BaseDecoder {
                 if (!frame.length)
                     continue;
                 // Skip common response terminators
-                if (frame.length <= 2 &&
-                    frame.some(b => b === 13 || b === 10 || b === 62)) { // CR, LF, >
+                if (frame.length <= 2 && frame.some((b) => b === 13 || b === 10 || b === 62)) {
                     continue;
                 }
-                // Parse CAN frame format or standard ASCII format
                 let bytes = [];
-                const frameString = frame.map(byte => String.fromCharCode(byte)).join('');
-                // Log the frame as string for debugging
+                const frameString = frame.map((byte) => String.fromCharCode(byte)).join("");
                 this._log("debug", "Processing frame as string:", frameString);
-                const colonIndex = frameString.indexOf(':');
+                const colonIndex = frameString.indexOf(":");
                 if (colonIndex !== -1) {
-                    // Extract everything after the colon
                     const dataAfterColon = frameString.substring(colonIndex + 1);
-                    // Convert ASCII hex to bytes
+                    bytes = [];
+                    let currentByte = -1;
                     for (let i = 0; i < dataAfterColon.length; i++) {
-                        if (dataAfterColon[i] === '\r')
+                        const nibble = this._getNibbleValue(dataAfterColon.charCodeAt(i));
+                        if (nibble === -1)
                             continue;
-                        const hexPair = dataAfterColon.substr(i, 2);
-                        if (hexPair.length === 2) {
-                            const byteValue = parseInt(hexPair, 16);
-                            if (!isNaN(byteValue)) {
-                                bytes.push(byteValue);
-                            }
-                            i++; // Skip next character since we used it
+                        if (currentByte === -1) {
+                            currentByte = nibble << 4;
+                        }
+                        else {
+                            currentByte |= nibble;
+                            bytes.push(currentByte);
+                            currentByte = -1;
                         }
                     }
                 }
                 else {
-                    // Use enhanced ASCII conversion
                     bytes = this._convertAsciiToBytes(frame);
                 }
                 this._log("debug", "Converted bytes:", bytes);
-                if (bytes.length < 2) {
-                    continue; // Skip this frame and try next one
-                }
-                // Handle CAN format with 01 00 prefix
-                if (bytes[0] === 0x01 && bytes[1] === 0x00) {
-                    // Remove the 01 00 prefix and any bytes up to the mode response
-                    const modeIndex = bytes.findIndex(b => b === this.getModeResponseByte());
-                    if (modeIndex !== -1) {
-                        bytes = bytes.slice(modeIndex);
+                if (bytes.length < 2)
+                    continue;
+                // Find mode response position
+                let startIndex = 0;
+                const modeResponseByte = this.getModeResponseByte();
+                // Find the mode response byte
+                for (let i = 0; i < bytes.length; i++) {
+                    if (bytes[i] === modeResponseByte) {
+                        startIndex = i;
+                        break;
                     }
                 }
-                // Check for mode response byte - now using passed in mode response
-                const expectedResponse = this.getModeResponseByte();
-                if (bytes[0] !== expectedResponse) {
-                    this._log("debug", `Invalid mode response byte. Expected ${expectedResponse.toString(16)}, got ${bytes[0].toString(16)}`);
+                // Skip if mode response byte not found
+                if (startIndex >= bytes.length)
                     continue;
-                }
-                // Remove the mode response byte
-                const dtcBytes = bytes.slice(1);
-                this._log("debug", "DTC bytes:", dtcBytes);
-                // Check if all remaining bytes are zero (empty DTCs)
-                if (dtcBytes.every(b => b === 0)) {
-                    continue;
-                }
-                // Process DTC bytes in pairs
-                for (let i = 0; i < dtcBytes.length - 1; i += 2) {
-                    const byte1 = dtcBytes[i];
-                    const byte2 = dtcBytes[i + 1];
-                    // Skip if both bytes are zero
-                    if (byte1 === 0 && byte2 === 0) {
-                        continue;
+                // Get the bytes after mode response
+                const dtcData = bytes.slice(startIndex + 1);
+                // Check if there might be a count byte
+                if (dtcData.length > 0) {
+                    let dataStartIndex = 0;
+                    const possibleCount = dtcData[0];
+                    // If first byte looks like a count (smaller than the mode response and not a DTC byte)
+                    if (possibleCount < modeResponseByte && possibleCount <= dtcData.length / 2) {
+                        dataStartIndex = 1;
+                        this.expectedDTCCount = possibleCount;
                     }
-                    const dtc = this._decodeDTC(byte1.toString(16).padStart(2, '0'), byte2.toString(16).padStart(2, '0'));
-                    if (dtc) {
-                        rawDtcs.add(dtc);
-                        const dtcString = this._dtcToString(dtc);
-                        this._log("debug", "Decoded DTC:", dtcString);
-                        if (dtcString) {
-                            dtcs.add(dtcString);
-                            this.setDTC(dtcString);
+                    // Process DTC bytes in pairs
+                    for (let i = dataStartIndex; i < dtcData.length - 1; i += 2) {
+                        const byte1 = dtcData[i];
+                        const byte2 = dtcData[i + 1];
+                        if (byte1 === 0 && byte2 === 0)
+                            continue;
+                        const dtc = this._decodeDTC(byte1.toString(16).padStart(2, "0"), byte2.toString(16).padStart(2, "0"));
+                        if (dtc) {
+                            if (!dtcs.has(dtc)) {
+                                dtcs.add(dtc);
+                                rawDtcs.add(dtc);
+                                this.setDTC(dtc);
+                                this._log("debug", "Found DTC:", dtc);
+                            }
                         }
                     }
                 }
@@ -112,34 +156,153 @@ export class CanSingleFrame extends BaseDecoder {
             return [];
         }
     }
+    _processStandardAsciiHexFormat(frames) {
+        const dtcs = new Set();
+        const modeResponseHex = toHexString(this.getModeResponseByte()).toUpperCase();
+        for (const frame of frames) {
+            const frameString = byteArrayToString(frame).replace(/[\r\n>]/g, "");
+            this._log("debug", `Processing ASCII hex frame: ${frameString}`);
+            // Skip if frame doesn't start with mode response
+            if (!frameString.startsWith(modeResponseHex)) {
+                this._log("debug", `Frame doesn't start with ${modeResponseHex}, skipping`);
+                continue;
+            }
+            // Get everything after the mode response byte
+            const dataAfterMode = frameString.substring(2);
+            this._log("debug", `Full data after mode response: ${dataAfterMode}`);
+            // Try to detect if the first byte is a count
+            let dtcData = dataAfterMode;
+            let countByte = false;
+            if (dataAfterMode.length >= 2) {
+                const possibleCountHex = dataAfterMode.substring(0, 2);
+                const possibleCount = parseInt(possibleCountHex, 16);
+                // Check if this looks like a valid count:
+                // 1. It's a reasonable number (not too large)
+                // 2. It's not likely part of a DTC itself
+                if (!isNaN(possibleCount) &&
+                    possibleCount > 0 &&
+                    possibleCount <= 20) { // Reasonable max limit
+                    this._log("debug", `Detected count byte: ${possibleCountHex} (${possibleCount} DTCs)`);
+                    this.expectedDTCCount = possibleCount;
+                    dtcData = dataAfterMode.substring(2); // Skip the count byte
+                    countByte = true;
+                }
+                else {
+                    this._log("debug", `No count byte detected, parsing all data as DTCs`);
+                }
+            }
+            this._log("debug", `DTC hex data: ${dtcData}`);
+            // Special case for 4301010113 pattern (count=1 with additional data)
+            if (countByte) {
+                // With a count byte, process the expected number of DTCs first
+                for (let i = 0; i < this.expectedDTCCount; i++) {
+                    const startPos = i * 4;
+                    // Make sure we have at least 2 chars for a minimal DTC
+                    if (startPos + 1 < dtcData.length) {
+                        let dtcHex;
+                        // Check if we have a full 4-char DTC
+                        if (startPos + 3 < dtcData.length) {
+                            dtcHex = dtcData.substring(startPos, startPos + 4);
+                        }
+                        else {
+                            // Handle shortened DTC (like "01" for P0101)
+                            const shortCode = dtcData.substring(startPos);
+                            if (shortCode.length === 2) {
+                                // For 2-char codes like "01", use the format 0101 for P0101
+                                dtcHex = `01${shortCode}`;
+                                this._log("debug", `Expanded shortened DTC code: ${shortCode} -> ${dtcHex}`);
+                            }
+                            else {
+                                // Default padding if we don't have exactly 2 chars
+                                dtcHex = shortCode.padEnd(4, '0');
+                            }
+                        }
+                        if (dtcHex === "0000" || !/^[0-9A-F]{4}$/i.test(dtcHex)) {
+                            continue;
+                        }
+                        const dtc = hexToDTC(dtcHex);
+                        if (dtc) {
+                            dtcs.add(dtc);
+                            this._log("debug", `Found DTC: ${dtc} from hex ${dtcHex}`);
+                            this.currentDTCCount++;
+                        }
+                    }
+                }
+                // After processing the expected DTCs, check for any additional DTCs in the remaining data
+                const processedChars = this.expectedDTCCount * 4;
+                if (dtcData.length > processedChars) {
+                    const remainingData = dtcData.substring(processedChars);
+                    // Check for additional complete DTCs (4 chars)
+                    for (let i = 0; i < remainingData.length; i += 2) {
+                        // If we have at least 2 chars, try to parse as a DTC
+                        if (i + 1 < remainingData.length) {
+                            const shortCode = remainingData.substring(i, i + 2);
+                            // For P-type DTCs with 2 chars (like "13"), use format 0113 (P0113)
+                            const additionalDtcHex = `01${shortCode}`;
+                            const additionalDtc = hexToDTC(additionalDtcHex);
+                            if (additionalDtc) {
+                                dtcs.add(additionalDtc);
+                                this._log("debug", `Found additional DTC: ${additionalDtc} from hex ${additionalDtcHex}`);
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                // Standard processing in 4-byte chunks for no count byte format
+                for (let i = 0; i < dtcData.length; i += 4) {
+                    // Make sure we have enough characters for a complete DTC
+                    if (i + 3 < dtcData.length) {
+                        const dtcHex = dtcData.substring(i, i + 4);
+                        // Skip empty or all-zero DTCs
+                        if (dtcHex === "0000" || !/^[0-9A-F]{4}$/i.test(dtcHex)) {
+                            continue;
+                        }
+                        const dtc = hexToDTC(dtcHex);
+                        if (dtc) {
+                            dtcs.add(dtc);
+                            this._log("debug", `Found DTC: ${dtc} from hex ${dtcHex}`);
+                            this.currentDTCCount++;
+                        }
+                    }
+                }
+            }
+        }
+        const result = Array.from(dtcs);
+        this._log("debug", `Discovered DTC count: ${result.length}`);
+        return result;
+    }
+    _decodeDTC(byte1, byte2) {
+        try {
+            const combinedHex = byte1.padStart(2, '0') + byte2.padStart(2, '0');
+            return hexToDTC(combinedHex);
+        }
+        catch (error) {
+            this._log("error", "Failed to decode DTC:", error);
+            return null;
+        }
+    }
     _convertAsciiToBytes(asciiBytes) {
         const bytes = [];
         let currentByte = -1;
-        // First log the ASCII value as string for debugging
-        const asciiString = asciiBytes.map(b => String.fromCharCode(b)).join('');
-        this._log("debug", "Converting ASCII string:", asciiString);
-        // Get the expected mode response prefix
-        const modeResponsePrefix = this.getModeResponseByte().toString(16).toUpperCase();
-        console.log({ modeResponsePrefix });
-        // If this looks like a response with service mode + DTCs (e.g. "4302040201" or "4A01242F"),
-        // extract the DTCs directly - making this mode-agnostic
-        if (asciiString.startsWith(modeResponsePrefix)) {
-            // Process a string which represents service response with DTCs
-            let hexDump = asciiString.replace(/[\r\n>]/g, ''); // Remove CR, LF, >
-            // Extract bytes by converting pairs of characters to hex values
+        const asciiString = byteArrayToString(asciiBytes);
+        this._log("debug", formatMessage("Converting ASCII string:", "", asciiString));
+        // First check if this is a hex dump format
+        const modeResponseHex = toHexString(this.getModeResponseByte()).toUpperCase();
+        if (asciiString.startsWith(modeResponseHex)) {
+            let hexDump = asciiString.replace(/[\r\n>]/g, "");
             for (let i = 0; i < hexDump.length; i += 2) {
                 if (i + 1 < hexDump.length) {
-                    const hexPair = hexDump.substr(i, 2);
+                    const hexPair = hexDump.substring(i, i + 2);
                     const byteValue = parseInt(hexPair, 16);
                     if (!isNaN(byteValue)) {
                         bytes.push(byteValue);
                     }
                 }
             }
-            this._log("debug", "Extracted bytes from ASCII hex string:", bytes);
             return bytes;
         }
-        // Original conversion method as fallback
+        // Standard ASCII hex processing
         for (const ascii of asciiBytes) {
             if (ascii === 13)
                 continue; // Skip CR
@@ -151,10 +314,7 @@ export class CanSingleFrame extends BaseDecoder {
             }
             else {
                 currentByte |= nibble;
-                // Skip if byte pair is 0x00 or 0xAA
-                if (currentByte !== 0x00 && currentByte !== 0xAA) {
-                    bytes.push(currentByte);
-                }
+                bytes.push(currentByte);
                 currentByte = -1;
             }
         }
@@ -169,86 +329,14 @@ export class CanSingleFrame extends BaseDecoder {
             return byte - 87; // 'a'-'f'
         return -1;
     }
-    _decodeDTC(byte1, byte2) {
-        try {
-            const b1 = parseInt(byte1, 16);
-            const b2 = parseInt(byte2, 16);
-            if (isNaN(b1) || isNaN(b2)) {
-                this._log("debug", "Invalid DTC bytes:", { byte1, byte2 });
-                return null;
-            }
-            // First check for C-type DTC by looking at the first nibble
-            if ((b1 >> 4) === 0x0C) {
-                // This is a C-type DTC
-                // For C0321:
-                // byte1 = 0xC0 -> indicates C-type code and 0 as second digit
-                // byte2 = 0x32 -> keep as literal "32" from hex
-                const digit2 = b1 & 0x0F; // Second digit from second nibble of byte1
-                // For C-type DTCs, preserve the hex digits from byte2
-                const byte2Hex = byte2.padStart(2, '0'); // Ensure 2 digits
-                const digit3 = parseInt(byte2Hex[0], 16); // First hex digit
-                const digits45 = parseInt(byte2Hex[1], 16); // Second hex digit
-                return {
-                    type: 1, // 1 = C-type
-                    digit2,
-                    digit3,
-                    digits45
-                };
-            }
-            // For all other types, use standard decoding
-            const type = (b1 >> 6) & 0x03;
-            const digit2 = (b1 >> 4) & 0x03;
-            const digit3 = b1 & 0x0f;
-            const digits45 = b2;
-            return { type, digit2, digit3, digits45 };
-        }
-        catch (error) {
-            this._log("error", "DTC decode error:", error);
-            return null;
-        }
-    }
     _dtcToString(dtc) {
-        try {
-            if (!dtc || typeof dtc !== "object")
-                return null;
-            const typeIndex = dtc.type;
-            const digit2 = dtc.digit2;
-            const digit3 = dtc.digit3;
-            const digits45 = dtc.digits45;
-            if (!this._isValidDTCComponents(typeIndex, digit2, digit3, digits45)) {
-                return null;
-            }
-            const types = ["P", "C", "B", "U"];
-            const typeChar = types[typeIndex];
-            const digit3Hex = digit3.toString(16).toUpperCase();
-            const digits45Hex = digits45.toString(16).padStart(2, "0").toUpperCase();
-            return `${typeChar}${digit2}${digit3Hex}${digits45Hex}`;
-        }
-        catch (error) {
-            this._log("error", "DTC string conversion error:", error);
-            return null;
-        }
-    }
-    _isValidDTCComponents(type, digit2, digit3, digits45) {
-        const validations = [
-            { value: type, max: 3, name: "type" },
-            { value: digit2, max: 3, name: "digit2" },
-            { value: digit3, max: 15, name: "digit3" },
-            { value: digits45, max: 255, name: "digits45" },
-        ];
-        return validations.every(({ value, max, name }) => {
-            const valid = value >= 0 && value <= max;
-            if (!valid) {
-                this._log("debug", `Invalid ${name} value: ${value}, max allowed: ${max}`);
-            }
-            return valid;
-        });
+        return dtc; // Already in the correct format from hexToDTC
     }
     _log(level, ...message) {
         if (false == false) {
             //return;
         }
-        console.log(`[${level}]`, ...message);
+        console.log(formatMessage(`[${level}]`, "", ""), ...message);
     }
     reset() {
         this.rawDtcObjects = [];
@@ -272,7 +360,7 @@ export class CanSingleFrame extends BaseDecoder {
     }
     isAllAFrameResponse(frameString) {
         // Remove any carriage returns and line feeds
-        const cleanFrame = frameString.replace(/[\r\n]/g, '');
+        const cleanFrame = frameString.replace(/[\r\n]/g, "");
         // Check if all characters are 'A' (case insensitive)
         return /^[Aa]+$/.test(cleanFrame);
     }

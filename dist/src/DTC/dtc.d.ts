@@ -17,6 +17,7 @@ export interface DTCObject {
     readonly digit3: number;
     readonly digits45: number;
 }
+export type DTCResult = string | DTCObject;
 export interface DTCStatus {
     readonly milActive: boolean;
     readonly dtcCount: number;
@@ -33,6 +34,6 @@ export interface DecoderConfig {
     readonly troubleCodeType: string;
     readonly logPrefix: string;
 }
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'warning';
 export type LogFunction = (level: LogLevel, ...message: unknown[]) => void;
 export type SetDTCFunction = (dtc: string) => void;

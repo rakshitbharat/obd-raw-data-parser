@@ -1,19 +1,12 @@
 import { LogLevel } from "../dtc.js";
 import { BaseDecoder } from "./BaseDecoder.js";
-interface DTCObject {
-    type: number;
-    digit2: number;
-    digit3: number;
-    digits45: number;
-}
 export declare class CanDecoder extends BaseDecoder {
     private singleFrameDecoder;
     protected leftoverByte: string | null;
     protected expectedDTCCount: number;
     protected currentDTCCount: number;
-    protected rawDtcObjects: DTCObject[];
+    protected rawDtcObjects: string[];
     private modeResponse;
-    private static readonly invalidDTCBytes;
     constructor(modeResponse?: number);
     setModeResponse(response: number): void;
     private bindMethodsToSingleFrameDecoder;
@@ -23,16 +16,8 @@ export declare class CanDecoder extends BaseDecoder {
     private _extractBytesFromData;
     private _getNibbleValue;
     private _processDTCBytes;
-    protected _decodeDTC(byte1: string, byte2: string): DTCObject | null;
-    protected _dtcToString(dtc: {
-        type: number;
-        digit2: number;
-        digit3: number;
-        digits45: number;
-    }): string | null;
-    private _parseByteValue;
-    private _isValidDTCComponents;
-    private _toHexString;
+    protected _decodeDTC(byte1: string, byte2: string): string | null;
+    protected _dtcToString(dtc: string): string | null;
     protected _log(level: LogLevel, ...message: unknown[]): void;
     protected setDTC(dtc: string): void;
     protected getModeResponseByte(): number;
@@ -50,10 +35,9 @@ export declare class CanDecoder extends BaseDecoder {
         catalyst: boolean;
     };
     private _isMultiFrameResponse;
-    private _isAsciiHexFormat;
     private _isCarFormat;
     private _isEmptyAsciiFormat;
-    private _processCarAsciiHexFormat;
+    private _isAsciiHexFormat;
     private _processStandardAsciiHexFormat;
+    private _processCarAsciiHexFormat;
 }
-export {};

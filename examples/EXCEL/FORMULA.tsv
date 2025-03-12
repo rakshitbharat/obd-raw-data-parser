@@ -1,0 +1,8 @@
+	OBD - Fault Code Converter [CSS Electronics]														
+	Convert OBD DTCs from raw decimal/hex to fault code representation + lookup description (if available)								Learn more:				OBD2 intro		
+	How to use: Go to "File/Make a copy" to enable editing														
+															
+		dec					Length	2	2	4	4	4			
+							Start	1	3	=J6+J5	=K6+K5	=L6+L5			
+	="DTC ("&C5&")"	DTC (hex)	Byte 1 (hex)	Byte 2 (hex)	Byte 1 (bin)	Byte 2 (bin)	DTC (bin)	C	#1	#2	#3	#4	DTC code	DTC description	
+	8253	=if(B8="","", if($C$5="hex",B8, dec2hex(B8,4)))	=if(B8="","", left(C8,2))	=if(B8="","", right(C8,2))	=if(B8="","", hex2bin(D8,8))	=if($B8="","", hex2bin(E8,8))	=if($B8="","", F8&G8)	=if(B8="","", vlookup(bin2dec(mid($F8,I$6,I$5)),MT!$B$3:$C$7,2,false))	=if(B8="","",bin2hex(mid($H8,J$6,J$5)))	=if(B8="","",bin2hex(mid($H8,K$6,K$5)))	=if(B8="","",bin2hex(mid($H8,L$6,L$5)))	=if(B8="","",bin2hex(mid($H8,M$6,M$5)))	=if(B8="","",join("",I8:M8))	=if(B8="","",iferror(vlookup(N8,fault_codes!$A$4:$B$3575,2,false),"No match - try online lookup"))	=if(O8="No match - try online lookup", "https://repairpal.com/obd-ii-code-chart","")

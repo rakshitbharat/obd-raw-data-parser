@@ -1,0 +1,46 @@
+]
+[debug] Processing frame as string: 0100:430201020113
+[debug] Converted bytes: [ 67, 2, 1, 2, 1, 19 ]
+[debug] Setting DTC: P0201
+[debug] Found DTC: P0201
+[debug] Setting DTC: P0201
+[debug] Found DTC: P0201
+[debug] Discovered DTC count: 1
+ 99 |         13,
+100 |       ],
+101 |       [13, 62],
+102 |     ];
+103 |     const result = decoder.decodeDTCs(response);
+104 |     expect(result).toEqual(["P0102", "P0113"]);
+                         ^
+error: expect(received).toEqual(expected)
+
+  [
+
+bring 
+we need to handle multiple DTC data formats more robustly, specifically:
+
+Mode + Data (no count)
+Mode + Count + Data
+Just Mode + Data (empty/no DTCs)
+The key issue is that we're not properly handling the byte sequence after the mode byte (0x43). Let me fix this by modifying the DTC
+
+and 
+  we have to find best and robust way that where is the count and incase there is no count then just after mode we have to take the data at last
+    there can be 2 things count and no count but mode will be there
+
+    so after mode directly data or after mode we can have count and the data or even no count just mode and data
+
+
+    i can see a small think if there is no colon we will not have count in the raw hex
+    we have to just pick the data just after mode for example
+
+43 mode
+01010113 data
+
+take note we dont have count so we have to take the bytes in our own way
+    
+
+[debug] Processing ASCII hex frame: 4A01049B
+
+from is now we dont have colon but we have count in data i dont know how we will identify we have a  count in data or not thats the biggeest thing we have to do
