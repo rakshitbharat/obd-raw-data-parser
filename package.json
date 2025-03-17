@@ -61,7 +61,7 @@
     "@types/ms": "^2.1.0",
     "@types/node": "^22.13.9",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/parser": "^8.26.1",
     "eslint": "^8.57.1",
     "eslint-plugin-jest": "^27.9.0",
     "husky": "^9.1.7",
