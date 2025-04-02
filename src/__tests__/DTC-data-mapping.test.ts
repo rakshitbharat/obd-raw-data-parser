@@ -6,6 +6,7 @@ interface DTCEntry {
   s: string; // Service mode
   b: number[][]; // Byte arrays
   r: string[]; // Response codes
+  isCan: boolean; // Indicates if the data is from a CAN bus
 }
 
 interface TestStats {
@@ -62,7 +63,7 @@ describe("DTC Data Validation", () => {
   // Run test for each DTC entry
   it.each(indexedTestCases)(
     "Test Case $testIndex: Mode $s should decode DTCs correctly",
-    ({ s: serviceMode, b: bytes, r: expected }) => {
+    ({ s: serviceMode, b: bytes, r: expected, isCan }) => {
       const config =
         SERVICE_MODE_CONFIG[serviceMode as keyof typeof SERVICE_MODE_CONFIG];
 
@@ -75,7 +76,7 @@ describe("DTC Data Validation", () => {
       // Create decoder and process DTCs
       const decoder = new DTCBaseDecoder({
         logPrefix: "TEST",
-        isCan: true,
+        isCan: isCan, // Use isCan value from test data instead of hardcoding
         serviceMode: config.mode,
         troubleCodeType: config.type,
       });
