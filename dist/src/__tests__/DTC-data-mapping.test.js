@@ -33,7 +33,7 @@ describe("DTC Data Validation", () => {
         testIndex: index + 1,
     }));
     // Run test for each DTC entry
-    it.each(indexedTestCases)("Test Case $testIndex: Mode $s should decode DTCs correctly", ({ s: serviceMode, b: bytes, r: expected }) => {
+    it.each(indexedTestCases)("Test Case $testIndex: Mode $s should decode DTCs correctly", ({ s: serviceMode, b: bytes, r: expected, isCan }) => {
         const config = SERVICE_MODE_CONFIG[serviceMode];
         // Validate service mode
         if (!config) {
@@ -43,7 +43,7 @@ describe("DTC Data Validation", () => {
         // Create decoder and process DTCs
         const decoder = new DTCBaseDecoder({
             logPrefix: "TEST",
-            isCan: true,
+            isCan: isCan, // Use isCan value from test data instead of hardcoding
             serviceMode: config.mode,
             troubleCodeType: config.type,
         });
