@@ -1,0 +1,185 @@
+in this folder we have .txt files many files
+which have text based custom styled logs entries in text
+now we have to write a script to extract the data from it to a data.json file
+in which we will loop to all .txt files and at last make a data.json file
+but now in data.json file we just want things like
+ │  {
+ │    "url": "obd",
+ │    "method": "post",
+ │    "payload": {
+ │      "action": "decodeDTC",
+ │      "data": "[[52,51,48,48,13],[52,51,48,48,13],[52,51,48,49,48,50,57,57,13],[52,51,48,48,13],[13,62]]",
+ │      "mode": "03",
+ │      "isCan": true
+ │    }
+ │  }
+ 2025-03-10 13:39:26.704 [INFO] 13:39:26 📱 INFO  [ObdDataManager] → [ObdDataManager] Setting data streaming status to: false
+ 2025-03-10 13:39:26.705 [INFO] 13:39:26 📱 INFO  [obdLiveDataSlice] → [obdLiveDataSlice] debug dataStreamingStatus changed to false
+ 2025-03-10 13:39:27.366 [DEBUG] 13:39:27 🔍 DEBUG [Axios] → [Axios] DTC Decoder Response 
+ │  {
+ │    "url": "obd",
+ │    "response": {
+ │      "status": "success",
+ │      "data": [
+ │        "P0102"
+ │      ]
+ │    }
+ │  }
+
+ here you can see we are making a axios call and in return we get response but we need the data in slightly diff format like 
+    [
+        {
+            "s": "03",
+            "r": ['P0102', 'P0103']
+          },
+          {
+            "s": "07",
+            "r": ['P0102', 'P0103']
+          },
+          {
+            "s": "0A",
+            "r": ['P0102', 'P0103']
+          }
+    ]
+
+now lets also understand the data.json file it is made to make test case and it will be used to run in our internal functions like
+
+const decoder = new DTCBaseDecoder({
+  ...baseConfig,
+  isCan: true,
+  serviceMode: "07",
+  troubleCodeType: "PENDING",
+});
+
+// From BASIC.txt CAN format
+const response = [
+  [
+    48, 49, 48, 13, 48, 58, 52, 55, 48, 55, 48, 49, 48, 49, 48, 49, 49,
+    51, 13,
+  ],
+  [49, 58, 68, 49, 52, 66, 68, 49, 53, 66, 68, 49, 53, 69, 68, 49, 13],
+  [50, 58, 54, 52, 69, 50, 50, 50, 48, 48, 48, 48, 48, 48, 48, 48, 13],
+  [51, 58, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 13],
+  [13, 62],
+];
+const result = decoder.decodeDTCs(response);
+console.log("Raw response:", response);
+console.log("Decoded result:", result);
+expect(result).toEqual([
+  "P0101",
+  "P0113",
+  "U114B",
+  "U115B",
+  "U115E",
+  "U1164",
+  "U2222",
+]);
+
+but we will load the data.json in javascript and loop all this entries later 
+
+so here we are just to create the data.json file with script python cased
+
+
+# OBD-II DTC Log Parser Specification
+
+## Objective
+Create a Python script to process OBD-II log files and generate structured DTC data.
+
+## Input Files
+- All `*_temp.txt` files containing raw session logs
+- Example log structure:
+```json
+{
+  "payload": {
+    "action": "decodeDTC",
+    "data": "[[52,51,48,49,50,52,54,51,13],[52,51,48,48,13],[13,62]]",
+    "mode": "03",
+    "isCan": true
+  },
+  "response": {
+    "status": "success",
+    "data": ["P2463"]
+  }
+}
+```
+
+## Output Requirements
+`data.json` should contain an array of:
+```json
+{
+  "btype": [ /* raw byte arrays */ ],
+  "service": "hex_mode", // e.g. "03", "07"
+  "response": [ /* DTC codes */ ]
+}
+```
+
+## Key Features
+1. Byte Array Handling
+   - Convert stringified arrays to actual JSON arrays
+   - Example: `"[[1,2],[3]]"` ➔ `[[1,2],[3]]`
+
+2. Service Mode Preservation
+   - Keep original hex values (uppercase)
+   - Allow duplicate service mode entries
+
+3. Response Processing
+   - Only include successful responses (`status: "success"`)
+   - Preserve exact DTC order and duplicates
+
+4. File Processing
+   - Process all `*_temp.txt` files in directory
+   - Maintain chronological order across files
+
+## Example Transformation
+**Input Log:**
+```json
+{
+  "payload": {
+    "data": "[[52,51],[13,62]]",
+    "mode": "07",
+    "isCan": false
+  },
+  "response": {
+    "data": ["U0100", "P0104"]
+  }
+}
+```
+
+**Output Entry:**
+```json
+{
+  "btype": [[52,51],[13,62]],
+  "service": "07",
+  "response": ["U0100", "P0104"]
+}
+```
+
+## Notes
+- Use Python's `json` module for safe parsing
+- Handle malformed entries by skipping them
+- Output should be UTF-8 encoded
+- Include error logging for debugging
+
+
+we want like this data json
+[
+    {
+      "s": "03",
+      "r": ["P245A", "B2AAA", ...]
+    },
+    {
+      "s": "07", 
+      "r": ["P16E8", "U0100", ...]
+    },
+    {
+      "s": "0A",
+      "r": ["P245A", "B2AAA", ...]
+    }, {
+      "s": "03",
+      "r": ["P245A", "B2AAA", ...]
+    },
+    {
+      "s": "0A",
+      "r": ["P245A", "B2AAA", ...]
+    },
+  ]
