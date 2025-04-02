@@ -62,10 +62,31 @@ def parse_log_file(file_path: str) -> List[Dict[str, Any]]:
                             
                             # Handle request
                             if 'payload' in data and data['payload'].get('action') == 'decodeDTC':
+                                # Debug print to see the actual payload
+                                print(f"\nPayload from {file_path}:")
+                                print(json.dumps(data['payload'], indent=2))
+                                
+                                # Extract isCan value from payload
+                                is_can = False  # Default to False
+                                
+                                # Check if protocol is specified in the payload
+                                protocol = data['payload'].get('protocol', '').lower()
+                                if protocol:
+                                    is_can = 'can' in protocol
+                                
+                                # If protocol is not specified, check for explicit isCan flag
+                                if 'isCan' in data['payload']:
+                                    is_can = bool(data['payload']['isCan'])
+                                elif 'iscan' in data['payload']:
+                                    is_can = bool(data['payload']['iscan'])
+                                elif 'protocol' not in data['payload']:
+                                    print(f"Warning: No protocol or isCan value found in {file_path}")
+                                
                                 request_data = {
                                     "s": data['payload']['mode'],
                                     "b": ast.literal_eval(data['payload']['data']),
-                                    "r": []
+                                    "r": [],
+                                    "isCan": is_can
                                 }
                             
                             # Handle response
@@ -85,7 +106,7 @@ def parse_log_file(file_path: str) -> List[Dict[str, Any]]:
 
 def main():
     # Directory containing the log files
-    log_dir = "examples/TEST/documentation"
+    log_dir = "./"
     output_file = os.path.join(log_dir, "data.json")
     
     all_dtc_entries = []
@@ -94,7 +115,7 @@ def main():
     for filename in sorted(os.listdir(log_dir)):
         if filename.endswith('_temp.txt'):
             file_path = os.path.join(log_dir, filename)
-            print(f"Processing {filename}...")
+            print(f"\nProcessing {filename}...")
             dtc_entries = parse_log_file(file_path)
             all_dtc_entries.extend(dtc_entries)
     
