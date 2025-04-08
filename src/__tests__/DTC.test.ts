@@ -305,4 +305,42 @@ describe("DTC Decoder", () => {
       expect(results).toEqual([["P0101"]]);
     });
   });
+
+  describe("DTC Decoder - Additional Tests", () => {
+    const baseConfig = {
+      logPrefix: "TEST",
+    };
+
+    test("should decode DTC P14A4 from non-CAN mode 07 response", () => {
+      const decoder = new DTCBaseDecoder({
+        ...baseConfig,
+        isCan: false,
+        serviceMode: "07",
+        troubleCodeType: "PENDING",
+      });
+
+      const response = [
+        [52, 55, 49, 52, 65, 52, 48, 48, 48, 48, 48, 48, 48, 48, 13],
+        [13, 62],
+      ];
+      const result = decoder.decodeDTCs(response);
+      expect(result).toEqual(["P14A4"]);
+    });
+
+    test("should decode DTC P14A4 from non-CAN mode 03 response", () => {
+      const decoder = new DTCBaseDecoder({
+        ...baseConfig,
+        isCan: false,
+        serviceMode: "03",
+        troubleCodeType: "CURRENT",
+      });
+
+      const response = [
+        [52, 51, 49, 52, 65, 52, 48, 48, 48, 48, 48, 48, 48, 48, 13],
+        [13, 62],
+      ];
+      const result = decoder.decodeDTCs(response);
+      expect(result).toEqual(["P14A4"]);
+    });
+  });
 });
