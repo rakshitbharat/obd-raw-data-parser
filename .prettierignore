@@ -1,0 +1,18 @@
+# .prettierignore
+
+# Build output
+lib/
+dist/
+coverage/
+
+# Lock files
+package-lock.json
+yarn.lock
+
+# Example App specific (if applicable)
+example/ios/Pods/
+example/android/
+example/node_modules/
+
+# Other generated files or directories
+node_modules/

@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    "__mocks__/**/*.js",
+    "jest.setup.js",
+    "jest.config.js",
+    "install-hooks.js"
+  ]
+}

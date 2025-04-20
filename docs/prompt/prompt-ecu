@@ -1,0 +1,112 @@
+# ECU Connection Verification Checklist
+
+## Overview
+This document provides a comprehensive checklist for verifying the Engine Control Unit (ECU) connection implementation. The verification process covers the entire communication flow from Bluetooth initialization to successful data exchange with the vehicle's ECU.
+
+## 1. Bluetooth Connection Layer
+- [ ] Verify Bluetooth device detection and connection handling
+- [ ] Check permission handling for Bluetooth operations
+- [ ] Confirm device connection state monitoring and management
+- [ ] Verify command queue management and synchronization
+- [ ] Test connection error handling and recovery mechanisms
+- [ ] Confirm Bluetooth disconnection cleanup procedures
+
+## 2. Protocol Detection & Initialization
+- [ ] Verify adapter reset sequence (ATZ) implementation
+- [ ] Check initialization commands (ATE0, ATL0, etc.) are sent in correct order
+- [ ] Confirm auto protocol detection (ATSP0) works correctly  
+- [ ] Verify manual protocol setting capabilities for each supported protocol
+- [ ] Confirm protocol number reporting (ATDPN) parsing
+- [ ] Test protocol timing configuration for different protocol types
+- [ ] Verify protocol state transitions (INITIALIZING → CONNECTED)
+- [ ] Confirm header configuration based on protocol type
+
+## 3. ECU Discovery & Communication
+- [ ] Verify ECU address detection in responses
+- [ ] Test handling of multi-ECU environments
+- [ ] Check ECU selection and switching functionality
+- [ ] Verify header formatting based on protocol and ECU address
+- [ ] Test flow control configuration for CAN protocols
+- [ ] Confirm ECU responsiveness testing with basic commands (0100)
+- [ ] Verify ECU information retrieval (adapter voltage)
+
+## 4. Command Execution Framework
+- [ ] Check command formatting (carriage return appending)
+- [ ] Verify command timeout handling
+- [ ] Test retry mechanisms for failed commands
+- [ ] Confirm response parsing and validation
+- [ ] Check adaptive timing implementation for optimal communication
+- [ ] Verify command queue processing
+- [ ] Test special command processing (DTC retrieval, VIN, etc.)
+
+## 5. Protocol-Specific Verification
+### CAN Protocols (ISO 15765-4)
+- [ ] Verify 11-bit vs 29-bit header format handling
+- [ ] Check flow control configuration for multi-frame messages
+- [ ] Test ISO-TP (ISO 15765-2) message segmentation and reassembly
+- [ ] Verify CAN filter settings
+
+### KWP2000 (ISO 14230-4)
+- [ ] Verify initialization sequence (fast init or 5-baud)
+- [ ] Check timing parameters specific to KWP
+- [ ] Test header formatting and recognition
+
+### ISO 9141-2
+- [ ] Verify 5-baud initialization sequence
+- [ ] Check timing parameters specific to ISO 9141-2
+- [ ] Test header formatting and recognition
+
+### J1850 PWM/VPW
+- [ ] Verify specific timing requirements
+- [ ] Test header formatting and recognition
+
+## 6. Error Handling & Recovery
+- [ ] Check detection of common error responses (NO DATA, ERROR, etc.)
+- [ ] Verify handling of BUS INIT errors
+- [ ] Test recovery from BUFFER FULL conditions
+- [ ] Confirm reconnection after protocol errors
+- [ ] Verify timeout handling and recovery
+- [ ] Test adapter reset procedures after critical errors
+
+## 7. Multi-Frame Message Handling
+- [ ] Verify CAN multi-frame message detection
+- [ ] Check flow control handling for multi-frame messages
+- [ ] Test message reassembly for large responses
+- [ ] Verify frame number tracking and sequencing
+- [ ] Confirm handling of incomplete multi-frame messages
+
+## 8. Execution Flow
+- [ ] Verify the entire connection sequence executes in the correct order
+- [ ] Check state management during connection process
+- [ ] Test error propagation through the connection stack
+- [ ] Verify event emissions for connection status changes
+- [ ] Confirm cleanup procedures execute correctly after disconnect
+
+## 9. Interface Integration
+- [ ] Verify the `useECU` hook provides the correct context
+- [ ] Check all ECUContext methods are accessible through the hook
+- [ ] Test context state updates after connection changes
+- [ ] Verify component re-renders on connection state changes
+- [ ] Confirm loading states are properly managed
+
+## 10. Performance & Resource Management
+- [ ] Test memory usage during long connection sessions
+- [ ] Verify resource cleanup on disconnection
+- [ ] Check for potential memory leaks in event listeners
+- [ ] Test performance with rapid command sequences
+- [ ] Verify Bluetooth connection management during app lifecycle events
+
+## Verification Process
+For each checklist item:
+1. Create a test scenario that specifically targets the feature
+2. Document expected behavior based on OBD-II specifications
+3. Test both success and failure conditions
+4. Verify proper error handling for edge cases
+5. Document actual behavior and any discrepancies
+
+## Critical Areas to Test
+1. Protocol detection reliability across different vehicles
+2. Multi-frame message handling for large responses (e.g., VIN)
+3. Recovery from unexpected disconnections
+4. ECU address detection accuracy
+5. Command timing optimization for reliable communication

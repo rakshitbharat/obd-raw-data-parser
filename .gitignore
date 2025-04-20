@@ -1,3 +1,92 @@
+# Build output
+lib/
+dist/
+build/
+
+# Dependencies
 node_modules/
+.npm/
+
+# Logs and debug files
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+.bun/
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
 .DS_Store
+*.sublime-project
+*.sublime-workspace
+.project
+.settings/
+.classpath
+*.iml
+.history/
+
+# Testing
+coverage/
+.nyc_output/
+junit.xml
+test-results/
+
+# React Native
+*.jsbundle
+*.jsbundle.map
+*.ipa
+*.apk
+.expo/
+ios/build/
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+ios/Pods/
+*.xcworkspace
+*.xcuserstate
+xcuserdata/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OSX
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.temp/

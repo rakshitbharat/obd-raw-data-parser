@@ -1,0 +1,56 @@
+I think we should carefully remove everything for ECU connection for now
+because we need to completely rewrite it.
+Let's start by removing it entirely.
+
+Note that we have Yarn, TypeScript, and lint properly implemented.
+Be careful not to remove anything else because we are going to rewrite the ECU connection flow again.
+
+We only need to focus on the src folder, so don't perform operations anywhere else.
+
+Why are you touching Clear DTC, DTC, or VIN retriever or elsewhere?
+They are fine as they are. We are a retriever class, not a real ECU or Bluetooth maintainer.
+The ECU connection flow just connects with ECU and sets up the ECU connection with the Bluetooth app,
+so just remove things about connecting with ECU. Don't touch anything else.
+
+Don't leave any functions marked as "will be rewritten again in future".
+We want to make this library ECU connection-less, and for now it will only have DTC, Clear DTC, VIN, and live data capabilities.
+
+Only remove ECU-related things. Don't touch anything else and don't comment out the code - just remove it.
+
+If something is used for DTC or anything else, don't change the types or constants.
+Let them remain because we are going to recreate everything.
+Understand that we are here to clean ECU connection to start over.
+
+We should keep the placeholder hook functions which are used by other functions,
+including their types and constants.
+
+Why are you touching:
+- src/ecu/hooks/useDTCRetriever.ts
+- src/ecu/retrievers/BaseDTCRetriever.ts
+- src/ecu/retrievers/CurrentDTCRetriever.ts
+- src/ecu/retrievers/index.ts
+- src/ecu/retrievers/PendingDTCRetriever.ts
+- src/ecu/retrievers/PermanentDTCRetriever.ts
+- src/ecu/retrievers/types.ts
+- src/ecu/services/connectionService.ts
+with functions for get VIN or DTC raw, etc.?
+
+Don't comment out constants in:
+src/ecu/utils/constants.ts
+Leave them there because removing constants will create lint errors,
+and we can review them later.
+
+I also notice many types removed from:
+src/ecu/utils/types.ts
+
+Please understand that even though we can resolve things by creating mocks,
+we won't be able to recreate all ECU functionality without these placeholder items.
+
+Don't remove any placeholder functions from hooks, retrievers, services, or utils.
+We can resolve functions like we do in mock tests by returning fake desired values.
+Don't comment any constants or remove any types - I repeat this point.
+
+Please note: If a function is used anywhere for ECU communication, do not remove it. Keep it as a placeholder and return mock responses similar to our test cases. This way, we will only need to add the actual logic later. This is our current requirement.
+
+Start the changes from scratch.
+Important: Do not modify anything that is not directly related to ECU communication. This is a strict requirement.

@@ -1,0 +1,60 @@
+Please analyze the following DTC (Diagnostic Trouble Code) implementation and verify:
+
+1. Protocol Handling & Detection:
+- Verify the protocol detection flow from Base to specific DTC retrievers
+- Confirm CAN vs non-CAN protocol handling accuracy
+- Check protocol state management and transitions
+- Validate protocol-specific optimizations
+
+2. Flow Control & Response Processing:
+- Review the flow control implementation for CAN protocols
+- Verify handling of multi-frame messages
+- Check response parsing and validation
+- Confirm ECU address extraction logic
+- Validate raw data processing for different protocols
+
+3. DTC Service Modes:
+- Mode 03 (Current DTCs) implementation
+- Mode 07 (Pending DTCs) implementation
+- Mode 0A (Permanent DTCs) implementation
+- Verify service mode transitions and state management
+
+4. Error Handling & Recovery:
+- Review error detection mechanisms
+- Validate retry logic
+- Check error recovery procedures
+- Verify timeout handling
+
+5. ECU Communication:
+- Verify command timing and delays
+- Check header configuration
+- Validate response format settings
+- Review multi-ECU support
+
+6. Data Flow:
+- Trace the complete data path from command to parsed DTCs
+- Verify data transformations at each step
+- Check data validation points
+- Confirm raw response handling
+
+7. Compatibility:
+- Verify support for all OBD-II protocols
+- Check handling of manufacturer-specific protocols
+- Validate protocol switching
+- Review backward compatibility
+
+8. State Management:
+- Verify protocol state tracking
+- Check configuration state management
+- Review session state handling
+- Validate cleanup procedures
+
+Please provide specific code examples where issues are found and suggest improvements while maintaining the original logic.
+
+Focus areas for specific protocols:
+- CAN (11/500, 29/500): Flow control, multi-frame
+- KWP2000: Timing, message format
+- ISO9141-2: Initialize sequence
+- J1850: Response handling
+
+The implementation should match the standard SAE J1979 specifications for DTC retrieval.

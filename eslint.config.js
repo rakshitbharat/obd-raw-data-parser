@@ -1,40 +1,75 @@
-import tsParser from '@typescript-eslint/parser';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
-import jestPlugin from 'eslint-plugin-jest';
+const { FlatCompat } = require('@eslint/eslintrc');
+const js = require('@eslint/js');
+const path = require('path');
+const reactNativePlugin = require('eslint-plugin-react-native');
 
-export default [
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended,
+});
+
+const customGlobals = {
+  window: 'readonly',
+  document: 'readonly',
+  console: 'readonly',
+  module: 'readonly',
+  require: 'readonly',
+  __DEV__: 'readonly',
+  process: 'readonly',
+  global: 'readonly',
+  Buffer: 'readonly',
+  setTimeout: 'readonly',
+  clearTimeout: 'readonly',
+  setImmediate: 'readonly',
+  TextEncoder: 'readonly',
+  TextDecoder: 'readonly',
+  NodeJS: 'readonly',
+};
+
+module.exports = [
+  js.configs.recommended,
   {
-    ignores: ['dist/**', 'coverage/**', 'node_modules/**']
-  },
-  {
-    files: ['**/*.ts'],
+    files: ['src/**/*.{js,jsx,ts,tsx}'],
+    ignores: ['**/node_modules/**'],
     languageOptions: {
-      parser: tsParser,
-      ecmaVersion: 2020,
+      ecmaVersion: 'latest',
       sourceType: 'module',
       parserOptions: {
-        project: './tsconfig.json'
-      }
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+      globals: customGlobals,
     },
     plugins: {
-      '@typescript-eslint': tsPlugin,
-      'jest': jestPlugin
+      'react-native': reactNativePlugin
     },
     rules: {
-      ...tsPlugin.configs.recommended.rules,
-      ...jestPlugin.configs.recommended.rules,
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['error', { 
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_'
-      }],
-      'jest/no-disabled-tests': 'warn',
-      'jest/no-focused-tests': 'error',
-      'jest/no-identical-title': 'error',
-      'jest/prefer-to-have-length': 'warn',
-      'jest/valid-expect': 'error'
+      'no-undef': 'error',
+      'no-unused-vars': 'warn',
+      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'react-native/no-inline-styles': 'warn',
+      'react-native/no-unused-styles': 'warn',
+      'react-native/split-platform-components': 'warn',
+      'react-native/no-color-literals': 'warn',
+      'react-native/no-raw-text': 'warn',
+      'react-native/no-single-element-style-arrays': 'warn',
+    },
+    settings: {
+      react: {
+        version: 'detect'
+      },
+      'react-native/style-sheet-object-names': ['StyleSheet', 'ViewStyles', 'TextStyles']
     }
-  }
+  },
+  ...compat.config({
+    extends: [
+      'eslint:recommended',
+      'plugin:react/recommended',
+      'plugin:react-hooks/recommended',
+      'plugin:@typescript-eslint/recommended',
+      'plugin:prettier/recommended',
+    ],
+  }),
 ];
