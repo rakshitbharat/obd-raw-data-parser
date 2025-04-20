@@ -1,4 +1,4 @@
-import { VinDecoder } from '../VIN/VinDecoder.js';
+import { VinDecoder } from '../VIN/VinDecoder';
 
 describe('VinDecoder', () => {
   describe('VIN processing', () => {

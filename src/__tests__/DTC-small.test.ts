@@ -3,7 +3,7 @@
 // @ts-ignore
 
 import obdResponses from '../data/obd_responses.json' with { type: 'json' };
-import { DTCBaseDecoder } from '../index.js';
+import { DTCBaseDecoder } from '../index';
 
 // Create decoders for different modes
 const mode03Decoder = new DTCBaseDecoder({

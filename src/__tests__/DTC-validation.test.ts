@@ -1,4 +1,4 @@
-import { DTCBaseDecoder } from '../index.js';
+import { DTCBaseDecoder } from '../index';
 
 describe('DTC Validation Tests', () => {
   const baseConfig = {

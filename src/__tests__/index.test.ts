@@ -1,5 +1,5 @@
-import { parseOBDResponse, getPIDInfo, getAllPIDs } from '../index.js';
-import { checkHex, Hex2Bin } from '../obdUtils.js';
+import { parseOBDResponse, getPIDInfo, getAllPIDs } from '../index';
+import { checkHex, Hex2Bin } from '../obdUtils';
 
 describe('OBD Parser', () => {
   describe('parseOBDResponse', () => {

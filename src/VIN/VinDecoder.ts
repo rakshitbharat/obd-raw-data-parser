@@ -1,4 +1,4 @@
-import { hexToBytes } from '../utils.js';
+import { hexToBytes } from '../utils';
 
 export class VinDecoder {
   private static readonly VALID_VIN_PATTERN = /^[A-HJ-NPR-Z0-9]{17}$/;

@@ -1,7 +1,7 @@
 import { log } from 'react-native-beautiful-logs';
-import { BaseDecoder } from './BaseDecoder.js';
-import { byteArrayToString, parseHexInt } from '../../utils.js';
-import { hexToDTC } from '../utils/dtcConverter.js';
+import { BaseDecoder } from './BaseDecoder';
+import { byteArrayToString, parseHexInt } from '../../utils';
+import { hexToDTC } from '../utils/dtcConverter';
 
 export class NonCanDecoder extends BaseDecoder {
   protected _determineFrameType(frame: number[]): 'colon' | 'no-colon' {

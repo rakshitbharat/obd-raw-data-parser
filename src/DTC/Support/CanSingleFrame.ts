@@ -1,7 +1,7 @@
 import { log } from 'react-native-beautiful-logs';
-import { BaseDecoder } from './BaseDecoder.js';
-import { byteArrayToString, toHexString } from '../../utils.js';
-import { hexToDTC } from '../utils/dtcConverter.js';
+import { BaseDecoder } from './BaseDecoder';
+import { byteArrayToString, toHexString } from '../../utils';
+import { hexToDTC } from '../utils/dtcConverter';
 
 export class CanSingleFrame extends BaseDecoder {
   protected leftoverByte: string | null = null;

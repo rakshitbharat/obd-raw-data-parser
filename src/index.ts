@@ -1,5 +1,5 @@
-import responsePIDS from './obdPIDS.js';
-import { IObdPIDDescriptor, IParsedOBDResponse, Modes } from './obdTypes.js';
+import responsePIDS from './obdPIDS';
+import { IObdPIDDescriptor, IParsedOBDResponse, Modes } from './obdTypes';
 
 export function parseOBDResponse(hexString: string): IParsedOBDResponse {
   const reply: IParsedOBDResponse = {};
@@ -127,5 +127,5 @@ export function getAllPIDs(): IObdPIDDescriptor[] {
   return responsePIDS;
 }
 
-export { DTCBaseDecoder } from './DTC/DTCBaseDecoder.js';
-export { VinDecoder } from './VIN/VinDecoder.js';
+export { DTCBaseDecoder } from './DTC/DTCBaseDecoder';
+export { VinDecoder } from './VIN/VinDecoder';

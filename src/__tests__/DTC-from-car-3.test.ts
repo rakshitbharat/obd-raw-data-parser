@@ -1,4 +1,4 @@
-import { DTCBaseDecoder } from '../index.js';
+import { DTCBaseDecoder } from '../index';
 
 describe('DTC From Car Tests - Additional Patterns', () => {
   const baseConfig = {

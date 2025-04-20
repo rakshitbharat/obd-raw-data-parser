@@ -1,11 +1,11 @@
 import { log } from 'react-native-beautiful-logs'; // Ensure this import exists
-import { CanDecoder } from './Support/Can.js';
-import { NonCanDecoder } from './Support/NonCan.js';
+import { CanDecoder } from './Support/Can';
+import { NonCanDecoder } from './Support/NonCan';
 // Remove LogLevel if not used elsewhere after changes
-import { DTCObject, DTCResult } from './dtc.js';
-import { DecoderConfig, DTCMode, DTCStatus } from './dtc.js';
-import { toHexString } from '../utils.js';
-import { handleFrameSequence } from './utils/dtcDecoder.js';
+import { DTCObject, DTCResult } from './dtc';
+import { DecoderConfig, DTCMode, DTCStatus } from './dtc';
+import { toHexString } from '../utils';
+import { handleFrameSequence } from './utils/dtcDecoder';
 
 const DTC_MODES: Record<string, DTCMode> = {
   MODE03: {

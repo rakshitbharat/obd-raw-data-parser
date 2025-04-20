@@ -1,4 +1,4 @@
-import { decToDTC, hexToDTC } from '../DTC/utils/dtcConverter.js';
+import { decToDTC, hexToDTC } from '../DTC/utils/dtcConverter';
 
 describe('DTC Converter Tests', () => {
   // Test cases from the Excel sheet examples

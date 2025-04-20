@@ -1,8 +1,8 @@
 import { log } from 'react-native-beautiful-logs';
-import { BaseDecoder } from './BaseDecoder.js';
-import { CanSingleFrame } from './CanSingleFrame.js';
-import { byteArrayToString, toHexString, parseHexInt } from '../../utils.js';
-import { hexToDTC } from '../utils/dtcConverter.js';
+import { BaseDecoder } from './BaseDecoder';
+import { CanSingleFrame } from './CanSingleFrame';
+import { byteArrayToString, toHexString, parseHexInt } from '../../utils';
+import { hexToDTC } from '../utils/dtcConverter';
 
 export class CanDecoder extends BaseDecoder {
   private singleFrameDecoder: CanSingleFrame;

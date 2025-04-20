@@ -1,4 +1,4 @@
-import { DTCBaseDecoder } from '../index.js';
+import { DTCBaseDecoder } from '../index';
 
 const baseConfig = {
   logPrefix: 'TEST',

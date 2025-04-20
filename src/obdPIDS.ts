@@ -1,4 +1,4 @@
-import { IObdPID, Modes } from './obdTypes.js';
+import { IObdPID, Modes } from './obdTypes';
 import {
   convertPIDSupported,
   convertDTCCheck,
@@ -39,7 +39,7 @@ import {
   convertExhaustGasTemperature,
   convertfrpd,
   PIDS,
-} from './obdInfo.js';
+} from './obdInfo';
 
 const modeRealTime: Modes = Modes['01'];
 

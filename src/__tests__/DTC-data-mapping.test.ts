@@ -1,4 +1,4 @@
-import { DTCBaseDecoder } from '../index.js';
+import { DTCBaseDecoder } from '../index';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 

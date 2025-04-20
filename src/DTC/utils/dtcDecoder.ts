@@ -1,5 +1,5 @@
-import { DTCObject } from '../dtc.js';
-import { toHexString, parseHexInt } from '../../utils.js';
+import { DTCObject } from '../dtc';
+import { toHexString, parseHexInt } from '../../utils';
 
 export function decodeDTC(byte1: string, byte2: string): DTCObject | null {
   try {

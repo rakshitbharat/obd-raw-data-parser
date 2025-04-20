@@ -1,9 +1,9 @@
-import { DTCObject, DTCModes, DTCResult } from '../dtc.js';
+import { DTCObject, DTCModes, DTCResult } from '../dtc';
 import {
   decodeDTC,
   dtcToString,
   isValidDTCFrame,
-} from '../utils/dtcDecoder.js';
+} from '../utils/dtcDecoder';
 
 export abstract class BaseDecoder {
   protected rawDtcObjects: DTCResult[] = [];
