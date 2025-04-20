@@ -30,8 +30,7 @@ export class NonCanDecoder extends BaseDecoder {
 
   protected _extractBytesFromData(dataArray: number[]): string[] {
     const bytes: string[] = [];
-    /* eslint-disable-next-line no-control-regex */
-    /* @ts-ignore -- Required for handling control characters in raw OBD data */
+    /* eslint-disable-next-line no-control-regex -- Required for handling control characters in raw OBD data */
     const hexString = byteArrayToString(dataArray).replace(
       /[\s\x00-\x1F]/g,
       '',
