@@ -37,9 +37,4 @@ export interface DecoderConfig {
   readonly isCan?: boolean; // Whether to use CAN or Non-CAN decoder
   readonly serviceMode: string; // Mode of operation (03, 07, 0A)
   readonly troubleCodeType: string; // Type of trouble code being decoded
-  readonly logPrefix: string; // Prefix for logging messages
 }
-
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'warning';
-export type LogFunction = (level: LogLevel, ...message: unknown[]) => void;
-export type SetDTCFunction = (dtc: string) => void;

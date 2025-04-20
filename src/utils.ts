@@ -111,21 +111,6 @@ export const calculateChecksum = (data: number[]): number => {
 };
 
 /**
- * Format message with header and footer
- * @param {string} message - Message to format
- * @param {string} header - Header to prepend
- * @param {string} footer - Footer to append
- * @returns {string} Formatted message
- */
-export const formatMessage = (
-  message: string,
-  header = '',
-  footer = '',
-): string => {
-  return `${header}${message}${footer}`;
-};
-
-/**
  * Parse hex string to number
  * @param {string} hex - Hex string to parse
  * @returns {number} Parsed number

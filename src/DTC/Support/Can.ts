@@ -1,12 +1,7 @@
-import { LogLevel } from '../dtc.js';
+import { log } from 'react-native-beautiful-logs';
 import { BaseDecoder } from './BaseDecoder.js';
 import { CanSingleFrame } from './CanSingleFrame.js';
-import {
-  byteArrayToString,
-  toHexString,
-  parseHexInt,
-  formatMessage,
-} from '../../utils.js';
+import { byteArrayToString, toHexString, parseHexInt } from '../../utils.js';
 import { hexToDTC } from '../utils/dtcConverter.js';
 
 export class CanDecoder extends BaseDecoder {
@@ -35,7 +30,6 @@ export class CanDecoder extends BaseDecoder {
   private bindMethodsToSingleFrameDecoder(): void {
     // Bind necessary methods and properties from CanDecoder to CanSingleFrame
     Object.defineProperties(this.singleFrameDecoder, {
-      _log: { value: this._log.bind(this) },
       setDTC: { value: this.setDTC.bind(this) },
       getModeResponseByte: { value: () => this.modeResponse },
     });
@@ -46,7 +40,7 @@ export class CanDecoder extends BaseDecoder {
       this.reset();
 
       const isMultiFrame = this._isMultiFrameResponse(rawResponseBytes);
-      this._log(
+      log(
         'debug',
         `Response type: ${isMultiFrame ? 'multi-frame' : 'single-frame'}`,
       );
@@ -57,7 +51,7 @@ export class CanDecoder extends BaseDecoder {
 
       // First check if this is the empty format with 4300AAAAA...
       if (this._isEmptyAsciiFormat(rawResponseBytes)) {
-        this._log(
+        log(
           'debug',
           'Detected empty ASCII hex format (4300AAA...), returning empty array',
         );
@@ -70,7 +64,7 @@ export class CanDecoder extends BaseDecoder {
       const isCarFormat = this._isCarFormat(rawResponseBytes);
 
       if (isAsciiHexFormat) {
-        this._log(
+        log(
           'debug',
           'Detected ASCII hex format response, using special processing',
         );
@@ -84,7 +78,7 @@ export class CanDecoder extends BaseDecoder {
       const dtcs = new Set<string>();
       const rawDtcs = new Set<string>();
 
-      this._log('debug', 'Processing raw response bytes:', rawResponseBytes);
+      log('debug', 'Processing raw response bytes:', rawResponseBytes);
 
       for (
         let frameIndex = 0;
@@ -95,7 +89,7 @@ export class CanDecoder extends BaseDecoder {
         let isCANFrame = false;
 
         if (!Array.isArray(frame) || frame.length < 4) {
-          this._log(
+          log(
             'debug',
             `Frame ${frameIndex}: Skipping invalid byte array:`,
             frame,
@@ -103,14 +97,14 @@ export class CanDecoder extends BaseDecoder {
           continue;
         }
 
-        this._log('debug', `Processing Frame ${frameIndex}:`, frame);
+        log('debug', `Processing Frame ${frameIndex}:`, frame);
 
         let bytes: string[] = [];
 
         // Add CAN-specific frame detection
         isCANFrame = frame.length <= 6;
         if (isCANFrame) {
-          this._log('debug', `Processing CAN frame ${frameIndex}`);
+          log('debug', `Processing CAN frame ${frameIndex}`);
           bytes = this._extractBytesFromCANFrame(frame);
         } else {
           // For non-CAN frames, use frame type detection
@@ -119,7 +113,7 @@ export class CanDecoder extends BaseDecoder {
             const colonIndex = frame.indexOf(58);
             bytes = this._extractBytesFromColonFrame(frame, colonIndex);
           } else {
-            this._log(
+            log(
               'debug',
               `Frame ${frameIndex}: No colon found, using alternative decoding`,
             );
@@ -128,7 +122,7 @@ export class CanDecoder extends BaseDecoder {
         }
 
         if (!bytes || bytes.length === 0) {
-          this._log('debug', `Frame ${frameIndex}: No bytes extracted`);
+          log('debug', `Frame ${frameIndex}: No bytes extracted`);
           continue;
         }
 
@@ -137,10 +131,10 @@ export class CanDecoder extends BaseDecoder {
 
       this.rawDtcObjects = Array.from(rawDtcs);
       const dtcArray = Array.from(dtcs);
-      this._log('debug', 'Discovered DTC count:', dtcArray.length);
+      log('debug', 'Discovered DTC count:', dtcArray.length);
       return dtcArray;
     } catch (error) {
-      this._log('error', 'Failed to parse response:', error);
+      log('error', 'Failed to parse response:', error);
       return [];
     }
   }
@@ -183,7 +177,7 @@ export class CanDecoder extends BaseDecoder {
       this.leftoverByte = currentNibble.toString(16).toLowerCase();
     }
 
-    this._log('debug', 'Extracted bytes:', bytes);
+    log('debug', 'Extracted bytes:', bytes);
     return bytes;
   }
 
@@ -201,7 +195,7 @@ export class CanDecoder extends BaseDecoder {
     frameIndex: number,
     isCANFrame: boolean,
   ): void {
-    this._log('debug', `Frame ${frameIndex}: Processing DTCs, bytes:`, bytes);
+    log('debug', `Frame ${frameIndex}: Processing DTCs, bytes:`, bytes);
     if (!bytes || bytes.length < 1) return;
     if (this.leftoverByte !== null) {
       bytes.unshift(this.leftoverByte);
@@ -228,7 +222,7 @@ export class CanDecoder extends BaseDecoder {
       if (i + 1 >= bytes.length) {
         // Handle odd number of bytes
         if (isCANFrame && this.expectedDTCCount === 0) {
-          this._log('warn', 'CAN frame has odd number of DTC bytes');
+          log('warn', 'CAN frame has odd number of DTC bytes');
         }
         this.leftoverByte = bytes[i];
         break;
@@ -246,7 +240,7 @@ export class CanDecoder extends BaseDecoder {
         rawDtcs.add(dtc);
         dtcs.add(dtc);
         this.setDTC(dtc);
-        this._log('debug', 'Discovered DTC:', dtc);
+        log('debug', 'Discovered DTC:', dtc);
       }
     }
   }
@@ -256,7 +250,7 @@ export class CanDecoder extends BaseDecoder {
       const combinedHex = byte1.padStart(2, '0') + byte2.padStart(2, '0');
       return hexToDTC(combinedHex);
     } catch (error) {
-      this._log('error', 'Failed to decode DTC:', error);
+      log('error', 'Failed to decode DTC:', error);
       return null;
     }
   }
@@ -265,14 +259,8 @@ export class CanDecoder extends BaseDecoder {
     return dtc; // Already in the correct format from hexToDTC
   }
 
-  protected _log(level: LogLevel, ...message: unknown[]): void {
-    if (level === 'info' || level === 'warn' || level === 'error') {
-      console[level](formatMessage(`[${level}]`, '', ''), ...message);
-    }
-  }
-
   protected setDTC(dtc: string): void {
-    this._log('debug', `Setting DTC: ${dtc}`);
+    log('debug', `Setting DTC: ${dtc}`);
   }
 
   protected getModeResponseByte(): number {
@@ -421,14 +409,11 @@ export class CanDecoder extends BaseDecoder {
       // Convert ASCII to string
       const frameString = byteArrayToString(frame).replace(/[\r\n>]/g, ''); // Remove CR, LF, >
 
-      this._log(
-        'debug',
-        formatMessage('Processing ASCII hex frame:', '', frameString),
-      );
+      log('debug', 'Processing ASCII hex frame:', frameString);
 
       // Check if it matches expected format for the current mode
       if (!frameString.startsWith(modeResponseHex)) {
-        this._log(
+        log(
           'debug',
           `Frame doesn't start with expected mode response ${modeResponseHex}`,
         );
@@ -448,7 +433,7 @@ export class CanDecoder extends BaseDecoder {
         const byte1Hex = dtcHexString.substring(i + 2, i + 4); // Second byte comes first
         const byte2Hex = dtcHexString.substring(i, i + 2); // First byte comes second
 
-        this._log(
+        log(
           'debug',
           `DTCs from position ${i}: swapping ${byte2Hex}${byte1Hex} to ${byte1Hex}${byte2Hex}`,
         );
@@ -463,7 +448,7 @@ export class CanDecoder extends BaseDecoder {
           const dtcString = this._dtcToString(dtc);
           if (dtcString) {
             dtcs.add(dtcString);
-            this._log('debug', 'Found DTC:', dtcString);
+            log('debug', 'Found DTC:', dtcString);
           }
         }
       }

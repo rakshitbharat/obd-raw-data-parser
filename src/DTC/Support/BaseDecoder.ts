@@ -1,4 +1,4 @@
-import { DTCObject, LogLevel, DTCModes, DTCResult } from '../dtc.js';
+import { DTCObject, DTCModes, DTCResult } from '../dtc.js';
 import {
   decodeDTC,
   dtcToString,
@@ -58,7 +58,6 @@ export abstract class BaseDecoder {
   }
 
   public abstract decodeDTCs(rawResponseBytes: number[][]): string[];
-  protected abstract _log(level: LogLevel, ...message: unknown[]): void;
   protected abstract setDTC(dtc: string): void;
   protected abstract getModeResponseByte(): number;
 }

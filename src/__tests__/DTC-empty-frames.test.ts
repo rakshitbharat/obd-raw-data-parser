@@ -24,7 +24,6 @@ describe('DTC Decoder', () => {
       ];
       const result = decoder.decodeDTCs(response);
 
-      console.log({ result });
       expect(result).toEqual([]);
     });
 

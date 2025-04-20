@@ -1,6 +1,6 @@
-import { LogLevel } from '../dtc.js';
+import { log } from 'react-native-beautiful-logs';
 import { BaseDecoder } from './BaseDecoder.js';
-import { byteArrayToString, parseHexInt, formatMessage } from '../../utils.js';
+import { byteArrayToString, parseHexInt } from '../../utils.js';
 import { hexToDTC } from '../utils/dtcConverter.js';
 
 export class NonCanDecoder extends BaseDecoder {
@@ -44,10 +44,7 @@ export class NonCanDecoder extends BaseDecoder {
       }
     }
 
-    this._log(
-      'debug',
-      formatMessage('Converted ASCII to bytes:', '', JSON.stringify(bytes)),
-    );
+    log('debug', 'Converted ASCII to bytes:', JSON.stringify(bytes));
     return bytes;
   }
 
@@ -102,17 +99,9 @@ export class NonCanDecoder extends BaseDecoder {
 
       return Array.from(dtcs);
     } catch (error) {
-      this._log(
-        'error',
-        formatMessage('Failed to parse response:', '', String(error)),
-      );
+      log('error', 'Failed to parse response:', String(error));
       return [];
     }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected _log(_level: LogLevel, ..._message: unknown[]): void {
-    // Implementation provided by parent
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -144,7 +133,7 @@ export class NonCanDecoder extends BaseDecoder {
       const combinedHex = byte1.padStart(2, '0') + byte2.padStart(2, '0');
       return hexToDTC(combinedHex);
     } catch (error) {
-      this._log('error', 'Failed to decode DTC:', error);
+      log('error', 'Failed to decode DTC:', error);
       return null;
     }
   }

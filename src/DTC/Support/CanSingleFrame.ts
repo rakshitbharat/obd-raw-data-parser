@@ -1,6 +1,6 @@
-import { LogLevel } from '../dtc.js';
+import { log } from 'react-native-beautiful-logs';
 import { BaseDecoder } from './BaseDecoder.js';
-import { byteArrayToString, toHexString, formatMessage } from '../../utils.js';
+import { byteArrayToString, toHexString } from '../../utils.js';
 import { hexToDTC } from '../utils/dtcConverter.js';
 
 export class CanSingleFrame extends BaseDecoder {
@@ -68,23 +68,20 @@ export class CanSingleFrame extends BaseDecoder {
       this.reset();
 
       if (this._isEmptyAsciiFormat(rawResponseBytes)) {
-        this._log(
-          'debug',
-          'Detected empty ASCII hex format, returning empty array',
-        );
+        log('debug', 'Detected empty ASCII hex format, returning empty array');
         return [];
       }
 
       const isAsciiHexFormat = this._isAsciiHexFormat(rawResponseBytes);
       if (isAsciiHexFormat) {
-        this._log('debug', 'Detected ASCII hex format response');
+        log('debug', 'Detected ASCII hex format response');
         return this._processStandardAsciiHexFormat(rawResponseBytes);
       }
 
       const dtcs = new Set<string>();
       const rawDtcs = new Set<string>();
 
-      this._log('debug', 'Processing raw response bytes:', rawResponseBytes);
+      log('debug', 'Processing raw response bytes:', rawResponseBytes);
 
       if (!rawResponseBytes.length || !rawResponseBytes[0].length) {
         return [];
@@ -107,7 +104,7 @@ export class CanSingleFrame extends BaseDecoder {
           .map(byte => String.fromCharCode(byte))
           .join('');
 
-        this._log('debug', 'Processing frame as string:', frameString);
+        log('debug', 'Processing frame as string:', frameString);
 
         const colonIndex = frameString.indexOf(':');
 
@@ -132,7 +129,7 @@ export class CanSingleFrame extends BaseDecoder {
           bytes = this._convertAsciiToBytes(frame);
         }
 
-        this._log('debug', 'Converted bytes:', bytes);
+        log('debug', 'Converted bytes:', bytes);
 
         if (bytes.length < 2) continue;
 
@@ -185,7 +182,7 @@ export class CanSingleFrame extends BaseDecoder {
                 dtcs.add(dtc);
                 rawDtcs.add(dtc);
                 this.setDTC(dtc);
-                this._log('debug', 'Found DTC:', dtc);
+                log('debug', 'Found DTC:', dtc);
               }
             }
           }
@@ -194,10 +191,10 @@ export class CanSingleFrame extends BaseDecoder {
 
       this.rawDtcObjects = Array.from(rawDtcs);
       const dtcArray = Array.from(dtcs);
-      this._log('debug', 'Discovered DTC count:', dtcArray.length);
+      log('debug', 'Discovered DTC count:', dtcArray.length);
       return dtcArray;
     } catch (error) {
-      this._log('error', 'Failed to parse response:', error);
+      log('error', 'Failed to parse response:', error);
       return [];
     }
   }
@@ -210,20 +207,17 @@ export class CanSingleFrame extends BaseDecoder {
 
     for (const frame of frames) {
       const frameString = byteArrayToString(frame).replace(/[\r\n>]/g, '');
-      this._log('debug', `Processing ASCII hex frame: ${frameString}`);
+      log('debug', `Processing ASCII hex frame: ${frameString}`);
 
       // Skip if frame doesn't start with mode response
       if (!frameString.startsWith(modeResponseHex)) {
-        this._log(
-          'debug',
-          `Frame doesn't start with ${modeResponseHex}, skipping`,
-        );
+        log('debug', `Frame doesn't start with ${modeResponseHex}, skipping`);
         continue;
       }
 
       // Get everything after the mode response byte
       const dataAfterMode = frameString.substring(2);
-      this._log('debug', `Full data after mode response: ${dataAfterMode}`);
+      log('debug', `Full data after mode response: ${dataAfterMode}`);
 
       // Try to detect if the first byte is a count
       let dtcData = dataAfterMode;
@@ -239,7 +233,7 @@ export class CanSingleFrame extends BaseDecoder {
         if (!isNaN(possibleCount) && possibleCount > 0 && possibleCount <= 20) {
           // Reasonable max limit
 
-          this._log(
+          log(
             'debug',
             `Detected count byte: ${possibleCountHex} (${possibleCount} DTCs)`,
           );
@@ -247,14 +241,11 @@ export class CanSingleFrame extends BaseDecoder {
           dtcData = dataAfterMode.substring(2); // Skip the count byte
           countByte = true;
         } else {
-          this._log(
-            'debug',
-            `No count byte detected, parsing all data as DTCs`,
-          );
+          log('debug', `No count byte detected, parsing all data as DTCs`);
         }
       }
 
-      this._log('debug', `DTC hex data: ${dtcData}`);
+      log('debug', `DTC hex data: ${dtcData}`);
 
       // Special case for 4301010113 pattern (count=1 with additional data)
       if (countByte) {
@@ -275,7 +266,7 @@ export class CanSingleFrame extends BaseDecoder {
               if (shortCode.length === 2) {
                 // For 2-char codes like "01", use the format 0101 for P0101
                 dtcHex = `01${shortCode}`;
-                this._log(
+                log(
                   'debug',
                   `Expanded shortened DTC code: ${shortCode} -> ${dtcHex}`,
                 );
@@ -292,7 +283,7 @@ export class CanSingleFrame extends BaseDecoder {
             const dtc = hexToDTC(dtcHex);
             if (dtc) {
               dtcs.add(dtc);
-              this._log('debug', `Found DTC: ${dtc} from hex ${dtcHex}`);
+              log('debug', `Found DTC: ${dtc} from hex ${dtcHex}`);
               this.currentDTCCount++;
             }
           }
@@ -315,7 +306,7 @@ export class CanSingleFrame extends BaseDecoder {
               const additionalDtc = hexToDTC(additionalDtcHex);
               if (additionalDtc) {
                 dtcs.add(additionalDtc);
-                this._log(
+                log(
                   'debug',
                   `Found additional DTC: ${additionalDtc} from hex ${additionalDtcHex}`,
                 );
@@ -338,7 +329,7 @@ export class CanSingleFrame extends BaseDecoder {
             const dtc = hexToDTC(dtcHex);
             if (dtc) {
               dtcs.add(dtc);
-              this._log('debug', `Found DTC: ${dtc} from hex ${dtcHex}`);
+              log('debug', `Found DTC: ${dtc} from hex ${dtcHex}`);
               this.currentDTCCount++;
             }
           }
@@ -347,7 +338,7 @@ export class CanSingleFrame extends BaseDecoder {
     }
 
     const result = Array.from(dtcs);
-    this._log('debug', `Discovered DTC count: ${result.length}`);
+    log('debug', `Discovered DTC count: ${result.length}`);
     return result;
   }
 
@@ -356,7 +347,7 @@ export class CanSingleFrame extends BaseDecoder {
       const combinedHex = byte1.padStart(2, '0') + byte2.padStart(2, '0');
       return hexToDTC(combinedHex);
     } catch (error) {
-      this._log('error', 'Failed to decode DTC:', error);
+      log('error', 'Failed to decode DTC:', error);
       return null;
     }
   }
@@ -366,10 +357,7 @@ export class CanSingleFrame extends BaseDecoder {
     let currentByte = -1;
 
     const asciiString = byteArrayToString(asciiBytes);
-    this._log(
-      'debug',
-      formatMessage('Converting ASCII string:', '', asciiString),
-    );
+    log('debug', 'Converting ASCII string:', asciiString);
 
     // First check if this is a hex dump format
     const modeResponseHex = toHexString(
@@ -421,12 +409,6 @@ export class CanSingleFrame extends BaseDecoder {
     return dtc; // Already in the correct format from hexToDTC
   }
 
-  protected _log(level: LogLevel, ...message: unknown[]): void {
-    if (level === 'info' || level === 'warn' || level === 'error') {
-      console[level](formatMessage(`[${level}]`, '', ''), ...message);
-    }
-  }
-
   public reset(): void {
     this.rawDtcObjects = [];
     this.expectedDTCCount = 0;
@@ -439,7 +421,7 @@ export class CanSingleFrame extends BaseDecoder {
   }
 
   protected setDTC(dtc: string): void {
-    this._log('debug', `Setting DTC: ${dtc}`);
+    log('debug', `Setting DTC: ${dtc}`);
   }
 
   protected isNoDataResponse(frame: number[]): boolean {

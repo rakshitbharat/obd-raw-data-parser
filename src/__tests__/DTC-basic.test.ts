@@ -24,8 +24,6 @@ test('should decode multiple DTCs from CAN format mode 07', () => {
     [13, 62],
   ];
   const result = decoder.decodeDTCs(response);
-  console.log('Raw response:', response);
-  console.log('Decoded result:', result);
   expect(result).toEqual([
     'P0101',
     'P0113',
@@ -57,8 +55,6 @@ test('should decode multiple DTCs from CAN format mode 0A', () => {
     [13, 62],
   ];
   const result = decoder.decodeDTCs(response);
-  console.log('Raw response:', response);
-  console.log('Decoded result:', result);
   expect(result).toEqual([
     'P0101',
     'P0113',
