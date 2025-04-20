@@ -117,7 +117,11 @@ export const calculateChecksum = (data: number[]): number => {
  * @param {string} footer - Footer to append
  * @returns {string} Formatted message
  */
-export const formatMessage = (message: string, header = '', footer = ''): string => {
+export const formatMessage = (
+  message: string,
+  header = '',
+  footer = '',
+): string => {
   return `${header}${message}${footer}`;
 };
 
@@ -149,7 +153,9 @@ export const decodeValue = (value: number[] | number): string => {
   if (!value) return '';
   try {
     const textDecoder = new TextDecoder('utf-8');
-    return textDecoder.decode(new Uint8Array(Array.isArray(value) ? value : [value]));
+    return textDecoder.decode(
+      new Uint8Array(Array.isArray(value) ? value : [value]),
+    );
   } catch (error) {
     console.error('[ECUDecoder] Error decoding value:', error);
     return '';
@@ -182,7 +188,10 @@ export const convertVoltageHexToValue = (hex: string): number => {
  * @param {string} response - OBD response
  * @returns {string} Extracted value
  */
-export const getValueFromResponse = (command: string, response: string): string => {
+export const getValueFromResponse = (
+  command: string,
+  response: string,
+): string => {
   if (!command || !response) return '';
   // Response processing logic would go here
   return response.replace(command, '').trim();

@@ -1,9 +1,9 @@
-import { DTCObject, LogLevel, DTCModes, DTCResult } from "../dtc.js";
+import { DTCObject, LogLevel, DTCModes, DTCResult } from '../dtc.js';
 import {
   decodeDTC,
   dtcToString,
   isValidDTCFrame,
-} from "../utils/dtcDecoder.js";
+} from '../utils/dtcDecoder.js';
 
 export abstract class BaseDecoder {
   protected rawDtcObjects: DTCResult[] = [];
@@ -11,9 +11,9 @@ export abstract class BaseDecoder {
   protected currentDTCCount = 0;
   protected leftoverByte: string | null = null;
   protected DTC_MODES: DTCModes = {
-    CURRENT: { RESPONSE: 0x43, DESCRIPTION: "Current DTCs" },
-    PENDING: { RESPONSE: 0x47, DESCRIPTION: "Pending DTCs" },
-    PERMANENT: { RESPONSE: 0x4a, DESCRIPTION: "Permanent DTCs" },
+    CURRENT: { RESPONSE: 0x43, DESCRIPTION: 'Current DTCs' },
+    PENDING: { RESPONSE: 0x47, DESCRIPTION: 'Pending DTCs' },
+    PERMANENT: { RESPONSE: 0x4a, DESCRIPTION: 'Permanent DTCs' },
   };
 
   constructor() {

@@ -4,8 +4,10 @@ export class VinDecoder {
   private static readonly VALID_VIN_PATTERN = /^[A-HJ-NPR-Z0-9]{17}$/;
 
   static isVinData(obdData: string): boolean {
-    return typeof obdData === 'string' && 
-           (obdData.includes('0902') || obdData.includes('490201'));
+    return (
+      typeof obdData === 'string' &&
+      (obdData.includes('0902') || obdData.includes('490201'))
+    );
   }
 
   static validateVIN(vin: string): boolean {
@@ -35,17 +37,17 @@ export class VinDecoder {
       // Convert hex to ASCII
       const bytes = hexToBytes(hexString);
       const ascii = String.fromCharCode(...bytes);
-      
+
       // Look for valid VIN pattern
       const vinMatches = ascii.match(/[A-HJ-NPR-Z0-9]{17}/g) || [];
-      
+
       // Return the first valid VIN found
       for (const match of vinMatches) {
         if (this.validateVIN(match)) {
           return match;
         }
       }
-      
+
       return null;
     } catch {
       return null;
@@ -54,7 +56,7 @@ export class VinDecoder {
 
   static processVINByteArray(byteArray: number[][]): string | null {
     if (!byteArray || !Array.isArray(byteArray)) return null;
-    
+
     try {
       // Convert byte array to string
       const rawData = byteArray
@@ -66,9 +68,7 @@ export class VinDecoder {
       if (!segments) return null;
 
       // Join segments and process
-      const hexData = segments
-        .map(seg => seg.split(':')[1] || '')
-        .join('');
+      const hexData = segments.map(seg => seg.split(':')[1] || '').join('');
 
       return this.processHexData(this.cleanHexData(hexData));
     } catch (error) {
@@ -85,9 +85,7 @@ export class VinDecoder {
       if (response.includes(':')) {
         const segments = response.match(/\d+:([0-9A-F]+)/gi);
         if (segments) {
-          const hexData = segments
-            .map(seg => seg.split(':')[1] || '')
-            .join('');
+          const hexData = segments.map(seg => seg.split(':')[1] || '').join('');
           return this.processHexData(this.cleanHexData(hexData));
         }
       }

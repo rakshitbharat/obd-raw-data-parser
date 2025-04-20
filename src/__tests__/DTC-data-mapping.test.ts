@@ -1,6 +1,6 @@
-import { DTCBaseDecoder } from "../index.js";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { DTCBaseDecoder } from '../index.js';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 interface DTCEntry {
   s: string; // Service mode
@@ -24,16 +24,16 @@ interface TestStats {
 }
 
 const SERVICE_MODE_CONFIG = {
-  "03": { mode: "03", type: "CURRENT" },
-  "07": { mode: "07", type: "PENDING" },
-  "0A": { mode: "0A", type: "PERMANENT" },
+  '03': { mode: '03', type: 'CURRENT' },
+  '07': { mode: '07', type: 'PENDING' },
+  '0A': { mode: '0A', type: 'PERMANENT' },
 } as const;
 
-describe("DTC Data Validation", () => {
+describe('DTC Data Validation', () => {
   // Load and prepare test data
   const testCases = (() => {
-    const dataPath = join(__dirname, "data-v1.json");
-    const rawData = readFileSync(dataPath, "utf8");
+    const dataPath = join(__dirname, 'data-v1.json');
+    const rawData = readFileSync(dataPath, 'utf8');
     return JSON.parse(rawData) as DTCEntry[];
   })();
 
@@ -46,11 +46,11 @@ describe("DTC Data Validation", () => {
       Object.entries(SERVICE_MODE_CONFIG).map(([mode]) => [
         mode,
         {
-          total: testCases.filter((entry) => entry.s === mode).length,
+          total: testCases.filter(entry => entry.s === mode).length,
           passed: 0,
           failed: 0,
         },
-      ])
+      ]),
     ),
   };
 
@@ -62,7 +62,7 @@ describe("DTC Data Validation", () => {
 
   // Run test for each DTC entry
   it.each(indexedTestCases)(
-    "Test Case $testIndex: Mode $s should decode DTCs correctly",
+    'Test Case $testIndex: Mode $s should decode DTCs correctly',
     ({ s: serviceMode, b: bytes, r: expected, isCan }) => {
       const config =
         SERVICE_MODE_CONFIG[serviceMode as keyof typeof SERVICE_MODE_CONFIG];
@@ -75,7 +75,7 @@ describe("DTC Data Validation", () => {
 
       // Create decoder and process DTCs
       const decoder = new DTCBaseDecoder({
-        logPrefix: "TEST",
+        logPrefix: 'TEST',
         isCan: isCan, // Use isCan value from test data instead of hardcoding
         serviceMode: config.mode,
         troubleCodeType: config.type,
@@ -96,7 +96,7 @@ describe("DTC Data Validation", () => {
         stats.byMode[serviceMode].failed++;
         throw error;
       }
-    }
+    },
   );
 
   test('verifies final statistics', () => {
@@ -105,5 +105,4 @@ describe("DTC Data Validation", () => {
       expect(modeStats.passed + modeStats.failed).toBe(modeStats.total);
     });
   });
-
 });
