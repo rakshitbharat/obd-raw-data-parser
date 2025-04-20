@@ -191,10 +191,8 @@ export class DTCBaseDecoder {
   }
 
   private log(level: LogLevel, ...message: unknown[]): void {
-    if (false == false) {
-      //return;
-    }
-    console.log(
+    this._log(
+      level,
       formatMessage(`[${level}] ${this.logPrefix}`, '', ''),
       ...message,
     );

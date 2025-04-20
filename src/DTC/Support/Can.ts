@@ -266,10 +266,9 @@ export class CanDecoder extends BaseDecoder {
   }
 
   protected _log(level: LogLevel, ...message: unknown[]): void {
-    if (false == false) {
-      //return;
+    if (level === 'info' || level === 'warn' || level === 'error') {
+      console[level](formatMessage(`[${level}]`, '', ''), ...message);
     }
-    console.log(formatMessage(`[${level}]`, '', ''), ...message);
   }
 
   protected setDTC(dtc: string): void {
