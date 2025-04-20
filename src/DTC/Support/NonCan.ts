@@ -32,6 +32,7 @@ export class NonCanDecoder extends BaseDecoder {
     const bytes: string[] = [];
 
     const hexString = byteArrayToString(dataArray).replace(
+      // eslint-disable-next-line no-control-regex
       /[\s\x00-\x1F]/g,
       '',
     );
