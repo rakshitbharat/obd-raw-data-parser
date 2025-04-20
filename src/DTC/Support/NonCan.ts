@@ -30,6 +30,7 @@ export class NonCanDecoder extends BaseDecoder {
 
   protected _extractBytesFromData(dataArray: number[]): string[] {
     const bytes: string[] = [];
+    // eslint-disable-next-line no-control-regex
     const hexString = byteArrayToString(dataArray).replace(
       /[\s\x00-\x1F]/g,
       '',
@@ -129,10 +130,7 @@ export class NonCanDecoder extends BaseDecoder {
     });
   }
 
-  protected _getDTCInfo(
-    _dtcLevel: string,
-    _dtcMessage: string,
-  ): Error | undefined {
+  protected _getDTCInfo(): Error | undefined {
     return undefined;
   }
 
