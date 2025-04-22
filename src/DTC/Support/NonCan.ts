@@ -1,4 +1,4 @@
-import { log } from 'react-native-beautiful-logs';
+import { log } from '../../logger';
 import { BaseDecoder } from './BaseDecoder';
 import { byteArrayToString, parseHexInt } from '../../utils';
 import { hexToDTC } from '../utils/dtcConverter';

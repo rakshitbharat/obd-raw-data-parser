@@ -1,4 +1,4 @@
-import { log } from 'react-native-beautiful-logs';
+import { log } from '../../logger';
 import { BaseDecoder } from './BaseDecoder';
 import { CanSingleFrame } from './CanSingleFrame';
 import { byteArrayToString, toHexString, parseHexInt } from '../../utils';

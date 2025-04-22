@@ -71,13 +71,9 @@
   "peerDependencies": {
     "react": ">=17.0.2",
     "react-native": ">=0.64.0",
-    "react-native-ble-manager": ">=10.1.3",
     "react-native-permissions": ">=3.0.0"
   },
   "dependencies": {
-    "react-native-beautiful-logs": "^1.0.8",
-    "react-native-ble-manager": ">=10.1.3",
-    "react-native-bluetooth-obd-manager": "^1.0.3",
     "text-encoding": "^0.7.0"
   },
   "devDependencies": {
