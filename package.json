@@ -6,7 +6,7 @@
   "module": "lib/module/index.js",
   "types": "lib/typescript/src/index.d.ts",
   "react-native": "lib/module/index.js",
-  "source": "lib/module/index.js",
+  "source": "src/index.ts",
   "exports": {
     ".": {
       "types": "./lib/typescript/src/index.d.ts",
@@ -19,11 +19,15 @@
   "files": [
     "lib",
     "!lib/**/*.map",
+    "!src/**/*",
     "!**/__tests__/**",
     "!**/__fixtures__/**",
     "!**/__mocks__/**",
     "!**/*.test.ts",
-    "!**/*.test.tsx"
+    "!**/*.test.tsx",
+    "!test/**/*",
+    "!scripts/**/*",
+    "!docs/**/*"
   ],
   "scripts": {
     "build": "yarn clean && bob build",
