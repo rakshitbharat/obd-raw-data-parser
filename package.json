@@ -1,6 +1,6 @@
 {
   "name": "obd-raw-data-parser",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "A React Native hook library to manage Bluetooth Low Energy connections and communication with ELM327 OBD-II adapters.",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
