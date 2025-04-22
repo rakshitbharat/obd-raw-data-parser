@@ -18,15 +18,15 @@ export interface IObdPID {
 }
 
 export enum Modes {
-  "01" = "01",
-  "03" = "03",
-  "04" = "04",
-  "09" = "09", // VIN mode
+  '01' = '01',
+  '03' = '03',
+  '04' = '04',
+  '09' = '09', // VIN mode
 }
 
 export interface IParsedOBDResponse
-  extends Partial<Pick<IObdPID, "mode" | "pid" | "name" | "unit">> {
+  extends Partial<Pick<IObdPID, 'mode' | 'pid' | 'name' | 'unit'>> {
   value?: number | string | Record<string, number> | boolean[];
 }
 
-export type IObdPIDDescriptor = Omit<IObdPID, "convertToUseful">;
+export type IObdPIDDescriptor = Omit<IObdPID, 'convertToUseful'>;

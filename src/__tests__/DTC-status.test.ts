@@ -1,20 +1,20 @@
-import { DTCBaseDecoder } from "../index.js";
+import { DTCBaseDecoder } from '../index';
 
-describe("DTC Status Tests", () => {
+describe('DTC Status Tests', () => {
   const baseConfig = {
-    logPrefix: "TEST",
+    logPrefix: 'TEST',
   };
 
-  describe("Status Byte Parsing", () => {
+  describe('Status Byte Parsing', () => {
     const decoder = new DTCBaseDecoder({
       ...baseConfig,
       isCan: true,
-      serviceMode: "03",
-      troubleCodeType: "CURRENT",
+      serviceMode: '03',
+      troubleCodeType: 'CURRENT',
     });
 
-    test("should parse status byte with all flags set", () => {
-      const status = decoder.parseDTCStatus(0xFF);
+    test('should parse status byte with all flags set', () => {
+      const status = decoder.parseDTCStatus(0xff);
       expect(status).toEqual({
         milActive: true,
         dtcCount: 127,
@@ -27,7 +27,7 @@ describe("DTC Status Tests", () => {
       });
     });
 
-    test("should parse status byte with no flags set", () => {
+    test('should parse status byte with no flags set', () => {
       const status = decoder.parseDTCStatus(0x00);
       expect(status).toEqual({
         milActive: false,
@@ -41,7 +41,7 @@ describe("DTC Status Tests", () => {
       });
     });
 
-    test("should parse status byte with only MIL active", () => {
+    test('should parse status byte with only MIL active', () => {
       const status = decoder.parseDTCStatus(0x80);
       expect(status).toEqual({
         milActive: true,
@@ -55,7 +55,7 @@ describe("DTC Status Tests", () => {
       });
     });
 
-    test("should parse status byte with DTC count only", () => {
+    test('should parse status byte with DTC count only', () => {
       const status = decoder.parseDTCStatus(0x03);
       expect(status).toEqual({
         milActive: false,
@@ -69,7 +69,7 @@ describe("DTC Status Tests", () => {
       });
     });
 
-    test("should parse status byte with specific error flags", () => {
+    test('should parse status byte with specific error flags', () => {
       // Set current error and EGR system flags
       const status = decoder.parseDTCStatus(0x24);
       expect(status).toEqual({
@@ -85,35 +85,38 @@ describe("DTC Status Tests", () => {
     });
   });
 
-  describe("Error Response Handling", () => {
-    test("should handle service mode errors", () => {
+  describe('Error Response Handling', () => {
+    test('should handle service mode errors', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: true,
-        serviceMode: "FF", // Invalid mode
-        troubleCodeType: "CURRENT",
+        serviceMode: 'FF', // Invalid mode
+        troubleCodeType: 'CURRENT',
       });
 
       const response = [
-        [48,49,48,13,48,58,52,51,48,55,48,49,48,49,48,49,49,51,13],
-        [13,62]
+        [
+          48, 49, 48, 13, 48, 58, 52, 51, 48, 55, 48, 49, 48, 49, 48, 49, 49,
+          51, 13,
+        ],
+        [13, 62],
       ];
       const result = decoder.decodeDTCs(response);
       expect(result).toEqual([]);
     });
 
-    test("should handle error frames", () => {
+    test('should handle error frames', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: true,
-        serviceMode: "03",
-        troubleCodeType: "CURRENT",
+        serviceMode: '03',
+        troubleCodeType: 'CURRENT',
       });
 
       const response = [
         // Error frame
-        [55,50,51,13], // "7" indicates error
-        [13,62]
+        [55, 50, 51, 13], // "7" indicates error
+        [13, 62],
       ];
       const result = decoder.decodeDTCs(response);
       expect(result).toEqual([]);

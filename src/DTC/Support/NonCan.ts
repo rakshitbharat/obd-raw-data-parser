@@ -1,17 +1,17 @@
-import { LogLevel } from "../dtc.js";
-import { BaseDecoder } from "./BaseDecoder.js";
-import { byteArrayToString, parseHexInt, formatMessage } from "../../utils.js";
-import { hexToDTC } from "../utils/dtcConverter.js";
+import { log } from 'react-native-beautiful-logs';
+import { BaseDecoder } from './BaseDecoder';
+import { byteArrayToString, parseHexInt } from '../../utils';
+import { hexToDTC } from '../utils/dtcConverter';
 
 export class NonCanDecoder extends BaseDecoder {
-  protected _determineFrameType(frame: number[]): "colon" | "no-colon" {
+  protected _determineFrameType(frame: number[]): 'colon' | 'no-colon' {
     const colonIndex = frame.indexOf(58);
-    return colonIndex !== -1 ? "colon" : "no-colon";
+    return colonIndex !== -1 ? 'colon' : 'no-colon';
   }
 
   protected _extractBytesFromColonFrame(
     frame: number[],
-    colonIndex: number
+    colonIndex: number,
   ): string[] {
     let dataStartIndex = colonIndex + 1;
     while (dataStartIndex < frame.length && frame[dataStartIndex] === 32) {
@@ -30,9 +30,11 @@ export class NonCanDecoder extends BaseDecoder {
 
   protected _extractBytesFromData(dataArray: number[]): string[] {
     const bytes: string[] = [];
+
     const hexString = byteArrayToString(dataArray).replace(
+      // eslint-disable-next-line no-control-regex
       /[\s\x00-\x1F]/g,
-      ""
+      '',
     );
 
     for (let i = 0; i < hexString.length; i += 2) {
@@ -42,10 +44,7 @@ export class NonCanDecoder extends BaseDecoder {
       }
     }
 
-    this._log(
-      "debug",
-      formatMessage("Converted ASCII to bytes:", "", JSON.stringify(bytes))
-    );
+    log('debug', 'Converted ASCII to bytes:', JSON.stringify(bytes));
     return bytes;
   }
 
@@ -65,7 +64,7 @@ export class NonCanDecoder extends BaseDecoder {
         const frameType = this._determineFrameType(frame);
         let bytes: string[];
 
-        if (frameType === "colon") {
+        if (frameType === 'colon') {
           bytes = this._extractBytesFromColonFrame(frame, frame.indexOf(58));
         } else {
           bytes = this._extractBytesFromNoColonFrame(frame);
@@ -100,17 +99,9 @@ export class NonCanDecoder extends BaseDecoder {
 
       return Array.from(dtcs);
     } catch (error) {
-      this._log(
-        "error",
-        formatMessage("Failed to parse response:", "", String(error))
-      );
+      log('error', 'Failed to parse response:', String(error));
       return [];
     }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected _log(_level: LogLevel, ..._message: unknown[]): void {
-    // Implementation provided by parent
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -124,29 +115,25 @@ export class NonCanDecoder extends BaseDecoder {
   }
 
   public setModeResponse(modeResponse: number): void {
-    Object.defineProperty(this, "getModeResponseByte", {
+    Object.defineProperty(this, 'getModeResponseByte', {
       value: () => modeResponse,
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected _getDTCInfo(
-    _dtcLevel: string,
-    _dtcMessage: string
-  ): Error | undefined {
+  protected _getDTCInfo(): Error | undefined {
     return undefined;
   }
 
   protected _decodeDTC(byte1: string, byte2: string): string | null {
     try {
       // Skip null, undefined, or "00" bytes
-      if (!byte1 || !byte2 || (byte1 === "00" && byte2 === "00")) {
+      if (!byte1 || !byte2 || (byte1 === '00' && byte2 === '00')) {
         return null;
       }
       const combinedHex = byte1.padStart(2, '0') + byte2.padStart(2, '0');
       return hexToDTC(combinedHex);
     } catch (error) {
-      this._log("error", "Failed to decode DTC:", error);
+      log('error', 'Failed to decode DTC:', error);
       return null;
     }
   }

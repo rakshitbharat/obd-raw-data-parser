@@ -1,3 +1,5 @@
-#!/usr/bin/env bash
-npx eslint .
-# bun test
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run lint-staged to format and lint changed files
+yarn lint-staged

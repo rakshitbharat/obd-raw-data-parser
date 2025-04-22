@@ -1,4 +1,4 @@
-import { decToDTC, hexToDTC } from '../DTC/utils/dtcConverter.js';
+import { decToDTC, hexToDTC } from '../DTC/utils/dtcConverter';
 
 describe('DTC Converter Tests', () => {
   // Test cases from the Excel sheet examples
@@ -22,7 +22,7 @@ describe('DTC Converter Tests', () => {
     { dec: 387, hex: '0183', expected: 'P0183' },
     { dec: 403, hex: '0193', expected: 'P0193' },
     { dec: 1541, hex: '0605', expected: 'P0605' },
-    { dec: 5887, hex: '16FF', expected: 'P16FF' }
+    { dec: 5887, hex: '16FF', expected: 'P16FF' },
   ];
 
   describe('Excel Formula Test Cases', () => {
@@ -31,7 +31,7 @@ describe('DTC Converter Tests', () => {
       ({ dec, hex, expected }) => {
         expect(decToDTC(dec)).toBe(expected);
         expect(hexToDTC(hex)).toBe(expected);
-      }
+      },
     );
   });
 
@@ -40,14 +40,14 @@ describe('DTC Converter Tests', () => {
       { hex: '0000', expected: 'P0000' }, // P category (00)
       { hex: '4000', expected: 'C0000' }, // C category (01)
       { hex: '8000', expected: 'B0000' }, // B category (10)
-      { hex: 'C000', expected: 'U0000' }  // U category (11)
+      { hex: 'C000', expected: 'U0000' }, // U category (11)
     ];
 
     test.each(categoryTests)(
       'hex $hex should map to category in $expected',
       ({ hex, expected }) => {
         expect(hexToDTC(hex)).toBe(expected);
-      }
+      },
     );
   });
 
@@ -59,7 +59,7 @@ describe('DTC Converter Tests', () => {
       const testCases = [
         { hex: 'FFFF', expected: 'U3FFF' }, // All bits set
         { hex: '5555', expected: 'C1555' }, // Alternating bits
-        { hex: 'AAAA', expected: 'B2AAA' }  // Inverse alternating bits
+        { hex: 'AAAA', expected: 'B2AAA' }, // Inverse alternating bits
       ];
 
       testCases.forEach(({ hex, expected }) => {

@@ -1,19 +1,17 @@
-import {
-  DTCBaseDecoder,
-} from "../index.js";
+import { DTCBaseDecoder } from '../index';
 
-describe("DTC Decoder", () => {
-  describe("DTCBaseDecoder", () => {
+describe('DTC Decoder', () => {
+  describe('DTCBaseDecoder', () => {
     const baseConfig = {
-      logPrefix: "TEST",
+      logPrefix: 'TEST',
     };
 
-    test("should decode DTCs from non-CAN mode 03 response with data", () => {
+    test('should decode DTCs from non-CAN mode 03 response with data', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
-        serviceMode: "03",
-        troubleCodeType: "CURRENT",
+        serviceMode: '03',
+        troubleCodeType: 'CURRENT',
       });
 
       // From DTC_WITH_DATA_EXAMPLE.txt
@@ -22,15 +20,15 @@ describe("DTC Decoder", () => {
         [13, 62],
       ];
       const result = decoder.decodeDTCs(response);
-      expect(result).toEqual(["P0101", "P0113", "U114B"]);
+      expect(result).toEqual(['P0101', 'P0113', 'U114B']);
     });
 
-    test("should handle NO DATA response in non-CAN format", () => {
+    test('should handle NO DATA response in non-CAN format', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
-        serviceMode: "0A",
-        troubleCodeType: "PERMANENT",
+        serviceMode: '0A',
+        troubleCodeType: 'PERMANENT',
       });
 
       // From DTC_9141_2.txt
@@ -42,12 +40,12 @@ describe("DTC Decoder", () => {
       expect(result).toEqual([]);
     });
 
-    test("should handle empty DTCs in non-CAN format", () => {
+    test('should handle empty DTCs in non-CAN format', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
-        serviceMode: "03",
-        troubleCodeType: "CURRENT",
+        serviceMode: '03',
+        troubleCodeType: 'CURRENT',
       });
 
       // From DTC_NO_DATA_EXAMPLE.txt
@@ -59,12 +57,12 @@ describe("DTC Decoder", () => {
       expect(result).toEqual([]);
     });
 
-    test("should decode multiple DTCs from CAN format mode 03", () => {
+    test('should decode multiple DTCs from CAN format mode 03', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: true,
-        serviceMode: "03",
-        troubleCodeType: "CURRENT",
+        serviceMode: '03',
+        troubleCodeType: 'CURRENT',
       });
 
       // From BASIC.txt CAN format
@@ -79,22 +77,22 @@ describe("DTC Decoder", () => {
       ];
       const result = decoder.decodeDTCs(response);
       expect(result).toEqual([
-        "P0101",
-        "P0113",
-        "U114B",
-        "U115B",
-        "U115E",
-        "U1164",
-        "U2222",
+        'P0101',
+        'P0113',
+        'U114B',
+        'U115B',
+        'U115E',
+        'U1164',
+        'U2222',
       ]);
     });
 
-    test("should decode multiple DTCs from CAN format mode 07", () => {
+    test('should decode multiple DTCs from CAN format mode 07', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: true,
-        serviceMode: "07",
-        troubleCodeType: "PENDING",
+        serviceMode: '07',
+        troubleCodeType: 'PENDING',
       });
 
       // From BASIC.txt CAN format
@@ -110,22 +108,22 @@ describe("DTC Decoder", () => {
       ];
       const result = decoder.decodeDTCs(response);
       expect(result).toEqual([
-        "P0101",
-        "P0113",
-        "U114B",
-        "U115B",
-        "U115E",
-        "U1164",
-        "U2222",
+        'P0101',
+        'P0113',
+        'U114B',
+        'U115B',
+        'U115E',
+        'U1164',
+        'U2222',
       ]);
     });
 
-    test("should decode multiple DTCs from CAN format mode 0A", () => {
+    test('should decode multiple DTCs from CAN format mode 0A', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: true,
-        serviceMode: "0A",
-        troubleCodeType: "PERMANENT",
+        serviceMode: '0A',
+        troubleCodeType: 'PERMANENT',
       });
 
       // From BASIC.txt CAN format
@@ -141,22 +139,22 @@ describe("DTC Decoder", () => {
       ];
       const result = decoder.decodeDTCs(response);
       expect(result).toEqual([
-        "P0101",
-        "P0113",
-        "U114B",
-        "U115B",
-        "U115E",
-        "U1164",
-        "U2222",
+        'P0101',
+        'P0113',
+        'U114B',
+        'U115B',
+        'U115E',
+        'U1164',
+        'U2222',
       ]);
     });
 
-    test("should decode DTCs from non-CAN mode 0A with numeric response", () => {
+    test('should decode DTCs from non-CAN mode 0A with numeric response', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
-        serviceMode: "0A",
-        troubleCodeType: "PERMANENT",
+        serviceMode: '0A',
+        troubleCodeType: 'PERMANENT',
       });
 
       // From DTC_WITH_DATA_EXAMPLE.txt
@@ -165,15 +163,15 @@ describe("DTC Decoder", () => {
         [13, 62],
       ];
       const result = decoder.decodeDTCs(response);
-      expect(result).toEqual(["P017F"]);
+      expect(result).toEqual(['P017F']);
     });
 
-    test("should handle sequential commands and responses", () => {
+    test('should handle sequential commands and responses', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
-        serviceMode: "03",
-        troubleCodeType: "CURRENT",
+        serviceMode: '03',
+        troubleCodeType: 'CURRENT',
       });
 
       // Test multiple commands in sequence
@@ -195,20 +193,20 @@ describe("DTC Decoder", () => {
         ],
       ];
 
-      const results = responses.map((response) => decoder.decodeDTCs(response));
+      const results = responses.map(response => decoder.decodeDTCs(response));
       expect(results).toEqual([
-        ["P0101", "P0113", "U114B"],
-        ["C0701", "P0101", "P13D1"],
-        ["P017F"],
+        ['P0101', 'P0113', 'U114B'],
+        ['C0701', 'P0101', 'P13D1'],
+        ['P017F'],
       ]);
     });
 
-    test("should handle mixed response patterns", () => {
+    test('should handle mixed response patterns', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
-        serviceMode: "0A",
-        troubleCodeType: "PERMANENT",
+        serviceMode: '0A',
+        troubleCodeType: 'PERMANENT',
       });
 
       const mixedResponses = [
@@ -224,18 +222,18 @@ describe("DTC Decoder", () => {
         ],
       ];
 
-      const results = mixedResponses.map((response) =>
-        decoder.decodeDTCs(response)
+      const results = mixedResponses.map(response =>
+        decoder.decodeDTCs(response),
       );
-      expect(results).toEqual([[], ["P017F"]]);
+      expect(results).toEqual([[], ['P017F']]);
     });
 
-    test("should handle responses with termination characters", () => {
+    test('should handle responses with termination characters', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
-        serviceMode: "03",
-        troubleCodeType: "CURRENT",
+        serviceMode: '03',
+        troubleCodeType: 'CURRENT',
       });
 
       // Test responses with different termination patterns
@@ -249,18 +247,18 @@ describe("DTC Decoder", () => {
         ],
       ];
 
-      responses.forEach((response) => {
+      responses.forEach(response => {
         const result = decoder.decodeDTCs(response);
-        expect(result).toEqual(["P0101", "P0113", "U114B"]);
+        expect(result).toEqual(['P0101', 'P0113', 'U114B']);
       });
     });
 
-    test("should handle malformed responses", () => {
+    test('should handle malformed responses', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
-        serviceMode: "03",
-        troubleCodeType: "CURRENT",
+        serviceMode: '03',
+        troubleCodeType: 'CURRENT',
       });
 
       const malformedResponses = [
@@ -278,18 +276,18 @@ describe("DTC Decoder", () => {
         ],
       ];
 
-      malformedResponses.forEach((response) => {
+      malformedResponses.forEach(response => {
         const result = decoder.decodeDTCs(response);
         expect(result).toEqual([]);
       });
     });
 
-    test("should handle different DTC prefix types", () => {
+    test('should handle different DTC prefix types', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
-        serviceMode: "03",
-        troubleCodeType: "CURRENT",
+        serviceMode: '03',
+        troubleCodeType: 'CURRENT',
       });
 
       // Test responses with different DTC prefixes (P, C, B, U)
@@ -301,22 +299,22 @@ describe("DTC Decoder", () => {
         ],
       ];
 
-      const results = responses.map((response) => decoder.decodeDTCs(response));
-      expect(results).toEqual([["P0101"]]);
+      const results = responses.map(response => decoder.decodeDTCs(response));
+      expect(results).toEqual([['P0101']]);
     });
   });
 
-  describe("DTC Decoder - Additional Tests", () => {
+  describe('DTC Decoder - Additional Tests', () => {
     const baseConfig = {
-      logPrefix: "TEST",
+      logPrefix: 'TEST',
     };
 
-    test("should decode DTC P14A4 from non-CAN mode 07 response", () => {
+    test('should decode DTC P14A4 from non-CAN mode 07 response', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
-        serviceMode: "07",
-        troubleCodeType: "PENDING",
+        serviceMode: '07',
+        troubleCodeType: 'PENDING',
       });
 
       const response = [
@@ -324,15 +322,15 @@ describe("DTC Decoder", () => {
         [13, 62],
       ];
       const result = decoder.decodeDTCs(response);
-      expect(result).toEqual(["P14A4"]);
+      expect(result).toEqual(['P14A4']);
     });
 
-    test("should decode DTC P14A4 from non-CAN mode 03 response", () => {
+    test('should decode DTC P14A4 from non-CAN mode 03 response', () => {
       const decoder = new DTCBaseDecoder({
         ...baseConfig,
         isCan: false,
-        serviceMode: "03",
-        troubleCodeType: "CURRENT",
+        serviceMode: '03',
+        troubleCodeType: 'CURRENT',
       });
 
       const response = [
@@ -340,7 +338,7 @@ describe("DTC Decoder", () => {
         [13, 62],
       ];
       const result = decoder.decodeDTCs(response);
-      expect(result).toEqual(["P14A4"]);
+      expect(result).toEqual(['P14A4']);
     });
   });
 });

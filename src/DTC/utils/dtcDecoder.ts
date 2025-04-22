@@ -1,49 +1,56 @@
-import { DTCObject } from "../dtc.js";
-import { toHexString, parseHexInt } from "../../utils.js";
+import { DTCObject } from '../dtc';
+import { toHexString, parseHexInt } from '../../utils';
 
 export function decodeDTC(byte1: string, byte2: string): DTCObject | null {
-    try {
-        const b1 = parseHexInt(byte1);
-        const b2 = parseHexInt(byte2);
+  try {
+    const b1 = parseHexInt(byte1);
+    const b2 = parseHexInt(byte2);
 
-        if (isNaN(b1) || isNaN(b2) || (b1 === 0 && b2 === 0)) {
-            return null;
-        }
-
-        // Try standard format first
-        const type = (b1 >> 6) & 0x03;
-        const digit2 = (b1 >> 4) & 0x03;
-        const digit3 = b1 & 0x0f;
-        const digits45 = b2;
-
-        if (isValidDTCComponents(type, digit2, digit3, digits45)) {
-            return { type, digit2, digit3, digits45 };
-        }
-
-        // Try car format (swapped bytes)
-        const swappedType = (b2 >> 6) & 0x03;
-        const swappedDigit2 = (b2 >> 4) & 0x03;
-        const swappedDigit3 = b2 & 0x0f;
-        const swappedDigits45 = b1;
-
-        if (isValidDTCComponents(swappedType, swappedDigit2, swappedDigit3, swappedDigits45)) {
-            return {
-                type: swappedType,
-                digit2: swappedDigit2,
-                digit3: swappedDigit3,
-                digits45: swappedDigits45
-            };
-        }
-
-        return null;
-    } catch {
-        return null;
+    if (isNaN(b1) || isNaN(b2) || (b1 === 0 && b2 === 0)) {
+      return null;
     }
+
+    // Try standard format first
+    const type = (b1 >> 6) & 0x03;
+    const digit2 = (b1 >> 4) & 0x03;
+    const digit3 = b1 & 0x0f;
+    const digits45 = b2;
+
+    if (isValidDTCComponents(type, digit2, digit3, digits45)) {
+      return { type, digit2, digit3, digits45 };
+    }
+
+    // Try car format (swapped bytes)
+    const swappedType = (b2 >> 6) & 0x03;
+    const swappedDigit2 = (b2 >> 4) & 0x03;
+    const swappedDigit3 = b2 & 0x0f;
+    const swappedDigits45 = b1;
+
+    if (
+      isValidDTCComponents(
+        swappedType,
+        swappedDigit2,
+        swappedDigit3,
+        swappedDigits45,
+      )
+    ) {
+      return {
+        type: swappedType,
+        digit2: swappedDigit2,
+        digit3: swappedDigit3,
+        digits45: swappedDigits45,
+      };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export function dtcToString(dtc: DTCObject): string | null {
   try {
-    if (!dtc || typeof dtc !== "object") return null;
+    if (!dtc || typeof dtc !== 'object') return null;
 
     const { type: typeIndex, digit2, digit3, digits45 } = dtc;
 
@@ -51,7 +58,7 @@ export function dtcToString(dtc: DTCObject): string | null {
       return null;
     }
 
-    const types = ["P", "C", "B", "U"];
+    const types = ['P', 'C', 'B', 'U'];
     const typeChar = types[typeIndex];
     const digit3Hex = toHexString(digit3, 1).toUpperCase();
     const digits45Hex = toHexString(digits45, 2).toUpperCase();
@@ -66,7 +73,7 @@ export function isValidDTCComponents(
   type: number,
   digit2: number,
   digit3: number,
-  digits45: number
+  digits45: number,
 ): boolean {
   const validations = [
     { value: type, max: 3 },
@@ -80,7 +87,7 @@ export function isValidDTCComponents(
 
 export function normalizeResponse(bytes: number[]): number[] {
   // Remove common terminators (CR, LF, >)
-  return bytes.filter((b) => ![13, 10, 62].includes(b));
+  return bytes.filter(b => ![13, 10, 62].includes(b));
 }
 
 export function isValidDTCFrame(frame: number[]): boolean {
@@ -96,13 +103,13 @@ export function handleFrameSequence(frames: number[][]): number[][] {
   if (!frames || frames.length === 0) return frames;
 
   return frames
-    .filter((frame) => frame && frame.length > 0)
-    .map((frame) => normalizeResponse(frame))
-    .filter((frame) => {
+    .filter(frame => frame && frame.length > 0)
+    .map(frame => normalizeResponse(frame))
+    .filter(frame => {
       // Filter out invalid frames and keep sequence
       const isValid =
         isValidDTCFrame(frame) ||
-        frame.some((byte) => byte >= 0x30 && byte <= 0x39); // Check for sequence numbers
+        frame.some(byte => byte >= 0x30 && byte <= 0x39); // Check for sequence numbers
       return isValid;
     });
 }

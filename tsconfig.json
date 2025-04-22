@@ -1,20 +1,31 @@
+// tsconfig.json
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "NodeNext",
+    "target": "esnext",
+    "module": "esnext",
+    "lib": ["es2017", "dom"],
+    "allowJs": true,
+    "jsx": "react-native",
     "declaration": true,
-    "outDir": "./dist",
+    "isolatedModules": true,
     "strict": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "rootDir": "src",
+    "outDir": "lib/typescript",
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "types": ["jest", "react-native", "node"]
   },
-  "include": ["src/**/*", "examples/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": [
+    "**/node_modules",
+    "**/.*",
+    "**/dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/__tests__"
+  ],
+  "include": ["src"]
 }

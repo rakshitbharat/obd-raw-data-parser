@@ -1,0 +1,12 @@
+check this all files and just give me files and functions which are non ecu related things
+you have to check entire code in src and give me list of all methods functions and files relative path and indetail report in which they are non ecu it means it do not related to connect with ecu and get protocol and etc things 
+create a singme md file for this thing nothing else
+find all types and const which are not ecu related
+we have to check only src folder and the document should have file folder method, function types, const, class name etc things 
+we dont need to explain its usage but it should ne in a detailed that we can just get idea that this things are non ecu
+many functions and many things list everything here and i dont want any human sentence i want a proper tree type view 
+also understand that even get vin, or get dtc or get dtc raw, or get live data, or clear dtc all are also non ecu things because it is coming from ecu 
+after proper connection but 
+a real ecu functions means connection or setting up first handshak connection with ecu to set a correct protocol and getting ecu
+setting slow control and so on
+#codebase 

@@ -1,5 +1,3 @@
-/* eslint-disable no-bitwise */
-
 // Add helper function to format numbers
 function formatNumber(value: number): number {
   return Number(value.toFixed(2));
@@ -29,11 +27,16 @@ function bitDecoder(byte: string): number {
   return parseInt(byte, 2);
 }
 
-function convertPIDSupported(byteA: string, byteB: string, byteC: string, byteD: string): boolean[] {
+function convertPIDSupported(
+  byteA: string,
+  byteB: string,
+  byteC: string,
+  byteD: string,
+): boolean[] {
   const hexstring = byteA + byteB + byteC + byteD;
   const pidHex = hexstring.split('');
   const pidStatus: boolean[] = [];
-  pidHex.forEach((hex) => {
+  pidHex.forEach(hex => {
     const hexPerm = Hex2Bin(hex).split('');
     hexPerm.forEach((perm: string) => {
       pidStatus.push(perm === '1');
@@ -45,12 +48,12 @@ function convertPIDSupported(byteA: string, byteB: string, byteC: string, byteD:
 interface FuelSystemResult {
   system1: number;
   system2?: number;
-  [key: string]: number | undefined;  // Add index signature to allow optional properties
+  [key: string]: number | undefined; // Add index signature to allow optional properties
 }
 
 function convertFuelSystem(byteA: string, byteB?: string): FuelSystemResult {
   const reply: FuelSystemResult = {
-    system1: bitDecoder(byteA)
+    system1: bitDecoder(byteA),
   };
   if (byteB) {
     reply.system2 = bitDecoder(byteB);
@@ -61,7 +64,7 @@ function convertFuelSystem(byteA: string, byteB?: string): FuelSystemResult {
 interface DTCCheckResult {
   numberOfErrors: number;
   mil: number;
-  [key: string]: number;  // Add index signature
+  [key: string]: number; // Add index signature
 }
 
 function convertDTCCheck(byteA: string): DTCCheckResult {
@@ -70,7 +73,7 @@ function convertDTCCheck(byteA: string): DTCCheckResult {
   const numberOfDTCs = byteValue % 128;
   return {
     numberOfErrors: numberOfDTCs,
-    mil
+    mil,
   };
 }
 
@@ -99,7 +102,9 @@ function convertSparkAdvance(byte: string) {
   return formatNumber(parseInt(byte, 16) / 2 - 64);
 }
 function convertAirFlowRate(byteA: string, byteB: string) {
-  return formatNumber((parseInt(byteA, 16) * 256.0 + parseInt(byteB, 16)) / 100);
+  return formatNumber(
+    (parseInt(byteA, 16) * 256.0 + parseInt(byteB, 16)) / 100,
+  );
 }
 function convertThrottlePos(byte: string) {
   return formatNumber((parseInt(byte, 16) * 100) / 255);
@@ -111,7 +116,9 @@ function convertRuntime(byteA: string, byteB: string) {
   return formatNumber(parseInt(byteA, 16) * 256.0 + parseInt(byteB, 16));
 }
 function convertfrpm(byteA: string, byteB: string) {
-  return formatNumber((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) * 0.079);
+  return formatNumber(
+    (parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) * 0.079,
+  );
 }
 function convertfrpd(byteA: string, byteB: string) {
   return formatNumber((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) * 10);
@@ -120,13 +127,22 @@ function convertfrpd(byteA: string, byteB: string) {
 interface LambdaResponse {
   ratio: number;
   voltage: number;
-  [key: string]: number;  // Add index signature
+  [key: string]: number; // Add index signature
 }
 
-function convertLambda(byteA: string, byteB: string, byteC: string, byteD: string): LambdaResponse {
+function convertLambda(
+  byteA: string,
+  byteB: string,
+  byteC: string,
+  byteD: string,
+): LambdaResponse {
   const reply: LambdaResponse = {
-    ratio: formatNumber(((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) * 2) / 65535),
-    voltage: formatNumber(((parseInt(byteC, 16) * 256 + parseInt(byteD, 16)) * 8) / 65535)
+    ratio: formatNumber(
+      ((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) * 2) / 65535,
+    ),
+    voltage: formatNumber(
+      ((parseInt(byteC, 16) * 256 + parseInt(byteD, 16)) * 8) / 65535,
+    ),
   };
   return reply;
 }
@@ -148,23 +164,33 @@ function convertLambda2(
   byteD: string,
 ): LambdaResponse {
   const reply: LambdaResponse = {
-    ratio: formatNumber((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) / 32768),
-    voltage: formatNumber((parseInt(byteC, 16) * 256 + parseInt(byteD, 16)) / 256 - 128)
+    ratio: formatNumber(
+      (parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) / 32768,
+    ),
+    voltage: formatNumber(
+      (parseInt(byteC, 16) * 256 + parseInt(byteD, 16)) / 256 - 128,
+    ),
   };
   return reply;
 }
 
 function convertCatalystTemperature(byteA: string, byteB: string) {
-  return formatNumber((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) / 10 - 40);
+  return formatNumber(
+    (parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) / 10 - 40,
+  );
 }
 function convertControlModuleVoltage(byteA: string, byteB: string) {
   return formatNumber((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) / 1000);
 }
 function convertAbsoluteLoad(byteA: string, byteB: string) {
-  return formatNumber(((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) * 100) / 255);
+  return formatNumber(
+    ((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) * 100) / 255,
+  );
 }
 function convertLambda3(byteA: string, byteB: string) {
-  return formatNumber((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) / 32768);
+  return formatNumber(
+    (parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) / 32768,
+  );
 }
 function convertAmbientAirTemp(byte: string) {
   return formatNumber(parseInt(byte, 16) - 40);
@@ -178,7 +204,7 @@ interface ExternalTestResponse {
   te2: number;
   te3: number;
   te4: number;
-  [key: string]: number;  // Add index signature
+  [key: string]: number; // Add index signature
 }
 
 function convertExternalTestEquipment(
@@ -191,7 +217,7 @@ function convertExternalTestEquipment(
     te1: bitDecoder(byteA),
     te2: bitDecoder(byteB),
     te3: bitDecoder(byteC),
-    te4: bitDecoder(byteD) * 10
+    te4: bitDecoder(byteD) * 10,
   };
   return reply;
 }
@@ -206,7 +232,7 @@ function convertExternalTestEquipment2(
     te1: bitDecoder(byteA) * 10,
     te2: bitDecoder(byteB),
     te3: bitDecoder(byteC),
-    te4: bitDecoder(byteD)
+    te4: bitDecoder(byteD),
   };
   return reply;
 }
@@ -220,13 +246,16 @@ function convertSystemVaporPressure(byteA: string, byteB: string) {
 interface OxygenSensorOutput {
   bank1: number;
   bank2: number;
-  [key: string]: number;  // Add index signature
+  [key: string]: number; // Add index signature
 }
 
-function convertShortOxygenSensorOutput(byteA: string, byteB: string): OxygenSensorOutput {
+function convertShortOxygenSensorOutput(
+  byteA: string,
+  byteB: string,
+): OxygenSensorOutput {
   return {
     bank1: formatNumber(((parseInt(byteA, 16) - 128) * 100) / 128),
-    bank2: formatNumber(((parseInt(byteB, 16) - 128) * 100) / 128)
+    bank2: formatNumber(((parseInt(byteB, 16) - 128) * 100) / 128),
   };
 }
 
@@ -234,7 +263,9 @@ function convertFuelRailPressureAbs(byteA: string, byteB: string) {
   return formatNumber((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) * 10);
 }
 function convertFuelInjectionTiming(byteA: string, byteB: string) {
-  return formatNumber((parseInt(byteA, 16) * 256 + parseInt(byteB, 16) - 26880) / 128);
+  return formatNumber(
+    (parseInt(byteA, 16) * 256 + parseInt(byteB, 16) - 26880) / 128,
+  );
 }
 function convertEngineFuelRate(byteA: string, byteB: string) {
   return formatNumber((parseInt(byteA, 16) * 256 + parseInt(byteB, 16)) * 0.05);
