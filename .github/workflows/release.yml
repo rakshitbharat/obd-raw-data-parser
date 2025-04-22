@@ -13,7 +13,6 @@ on:
 
 permissions:
   contents: write
-  discussions: write
   packages: write
 
 jobs:
@@ -26,12 +25,34 @@ jobs:
         with:
           node-version: '20'
           cache: 'yarn'
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       - run: yarn install --frozen-lockfile
       - run: yarn validate
 
+  test:
+    name: Test
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+      - run: yarn install --frozen-lockfile
+      - run: yarn test
+
   build:
     name: Build Package
-    needs: validate
+    needs: [validate, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,25 +75,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Generate Release Notes
-        id: release-notes
-        uses: conventional-changelog/conventional-changelog-action@v5
-        with:
-          config-file: .changelog.config.js
-          
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          body: ${{ steps.release-notes.outputs.changelog }}
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-          discussion_category_name: Releases
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          gh release create $VERSION \
+            --title "Release $VERSION" \
+            --generate-notes
 
   publish:
     name: Publish to NPM
@@ -99,23 +109,3 @@ jobs:
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          
-  notify:
-    name: Notify Success
-    needs: publish
-    runs-on: ubuntu-latest
-    if: success()
-    steps:
-      - uses: actions/checkout@v4
-      - name: Get version
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-      - name: Send notification
-        uses: slackapi/slack-github-action@v1.25.0
-        with:
-          payload: |
-            {
-              "text": "🎉 Successfully released version ${{ steps.get_version.outputs.VERSION }} of react-native-obd-retriver!"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

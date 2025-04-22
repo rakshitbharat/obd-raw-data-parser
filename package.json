@@ -28,14 +28,15 @@
   "scripts": {
     "build": "yarn clean && bob build",
     "clean": "del-cli lib",
-    "prepare": "yarn build",
     "test": "jest --config jest.config.cjs",
     "lint": "eslint src",
     "format": "prettier --write .",
     "format:src": "prettier --write \"src/**/*.{ts,tsx}\"",
     "prettier:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "test:coverage": "jest --coverage",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prepare-release": "yarn test && yarn lint && yarn build",
+    "validate": "yarn test && yarn type-check && yarn lint && yarn prettier:check"
   },
   "keywords": [
     "react-native",
@@ -87,7 +88,6 @@
     "@typescript-eslint/eslint-plugin": "*",
     "@typescript-eslint/parser": "*",
     "babel-jest": "*",
-    "commitlint": "*",
     "del-cli": "*",
     "eslint": "*",
     "eslint-config-prettier": "*",
@@ -96,7 +96,6 @@
     "eslint-plugin-react": "*",
     "eslint-plugin-react-hooks": "*",
     "eslint-plugin-react-native": "^5.0.0",
-    "husky": "*",
     "jest": "*",
     "jest-environment-jsdom": "^29.7.0",
     "jest-react-native": "^18.0.0",
@@ -121,23 +120,7 @@
     "yarn": ">=1.22"
   },
   "packageManager": "yarn@1.22.19",
-  "release-it": {
-    "git": {
-      "commitMessage": "chore: release ${version}",
-      "tagName": "v${version}"
-    },
-    "npm": {
-      "publish": true
-    },
-    "github": {
-      "release": true
-    },
-    "plugins": {
-      "@release-it/conventional-changelog": {
-        "preset": "angular"
-      }
-    }
-  },
+  
   "eslintConfig": {
     "root": true,
     "extends": [
