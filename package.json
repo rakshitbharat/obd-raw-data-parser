@@ -35,8 +35,9 @@
     "prettier:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "test:coverage": "jest --coverage",
     "type-check": "tsc --noEmit",
-    "prepare-release": "yarn test && yarn lint && yarn build",
-    "validate": "yarn test && yarn type-check && yarn lint && yarn prettier:check"
+    "validate": "yarn test && yarn type-check && yarn lint && yarn prettier:check",
+    "prerelease": "yarn validate && yarn build",
+    "version": "echo \"Manual version update required\""
   },
   "keywords": [
     "react-native",
