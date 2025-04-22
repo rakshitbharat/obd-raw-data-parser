@@ -1,4 +1,4 @@
-import { log } from 'react-native-beautiful-logs'; // Ensure this import exists
+import { log } from '../logger';
 import { CanDecoder } from './Support/Can';
 import { NonCanDecoder } from './Support/NonCan';
 // Remove LogLevel if not used elsewhere after changes
