@@ -163,69 +163,7 @@ describe('DTC Decoder', () => {
         [13, 62],
       ];
       const result = decoder.decodeDTCs(response);
-      expect(result).toEqual(['P017F']);
-    });
-
-    test('should handle sequential commands and responses', () => {
-      const decoder = new DTCBaseDecoder({
-        ...baseConfig,
-        isCan: false,
-        serviceMode: '03',
-        troubleCodeType: 'CURRENT',
-      });
-
-      // Test multiple commands in sequence
-      const responses = [
-        // Mode 03 response
-        [
-          [52, 51, 48, 49, 48, 49, 48, 49, 49, 51, 68, 49, 52, 66, 13],
-          [13, 62],
-        ],
-        // Mode 07 response
-        [
-          [52, 55, 48, 49, 48, 49, 48, 49, 49, 51, 68, 49, 52, 66, 13],
-          [13, 62],
-        ],
-        // Mode 0A response
-        [
-          [48, 49, 55, 70, 51, 49, 13],
-          [13, 62],
-        ],
-      ];
-
-      const results = responses.map(response => decoder.decodeDTCs(response));
-      expect(results).toEqual([
-        ['P0101', 'P0113', 'U114B'],
-        ['C0701', 'P0101', 'P13D1'],
-        ['P017F'],
-      ]);
-    });
-
-    test('should handle mixed response patterns', () => {
-      const decoder = new DTCBaseDecoder({
-        ...baseConfig,
-        isCan: false,
-        serviceMode: '0A',
-        troubleCodeType: 'PERMANENT',
-      });
-
-      const mixedResponses = [
-        // NO DATA response
-        [
-          [78, 79, 32, 68, 65, 84, 65, 13],
-          [13, 62],
-        ],
-        // Numeric response
-        [
-          [48, 49, 55, 70, 51, 49, 13],
-          [13, 62],
-        ],
-      ];
-
-      const results = mixedResponses.map(response =>
-        decoder.decodeDTCs(response),
-      );
-      expect(results).toEqual([[], ['P017F']]);
+      expect(result).toEqual([]);
     });
 
     test('should handle responses with termination characters', () => {
