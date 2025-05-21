@@ -76,6 +76,17 @@ export class NonCanDecoder extends BaseDecoder {
           const modeResponse = parseHexInt(bytes[0]);
           if (modeResponse === this.getModeResponseByte()) {
             bytes = bytes.slice(1);
+          } else if (modeResponse === 0x01 && bytes.length >= 3) {
+            // Check for KWP2000 negative response
+            const responseCode = parseHexInt(bytes[1]);
+            const serviceId = parseHexInt(bytes[2]);
+            if (responseCode === 0x7f) {
+              log(
+                'debug',
+                `KWP2000 negative response detected: 7F ${serviceId.toString(16).toUpperCase()}`,
+              );
+              return [];
+            }
           }
         }
 
